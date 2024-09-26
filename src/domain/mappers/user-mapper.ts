@@ -3,9 +3,9 @@ import { CompanyMapper } from './company-mapper';
 import { TaskMapper } from './task-mapper';
 import { UserEntity } from '../entities';
 import { mapOrEmpty } from 'src/infraestructure/helpers/map-or-empity-helper';
-import { mapOrNull } from 'src/infraestructure/helpers/map-or-null';
-import { mapOrUndefined } from 'src/infraestructure/helpers/map-or-undefined';
-import { mapAssignedToOrUndefined } from 'src/infraestructure/helpers/map-assign-or-undefined';
+import { mapAssignedToOrUndefined } from 'src/infraestructure/helpers/map-assign-or-undefined-helper';
+import { mapOrNull } from 'src/infraestructure/helpers/map-or-null-helper';
+import { mapOrUndefined } from 'src/infraestructure/helpers/map-or-undefined-helper';
 
 export class UserMapper {
   static toDomain(raw: any): UserEntity {
