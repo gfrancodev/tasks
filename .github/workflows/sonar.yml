@@ -3,7 +3,7 @@ name: SAST - Run Code Scanner
 on:
   push:
   pull_request:
-    types: [opened, synchronize, reopened]
+  
 jobs:
   sonarcloud:
     name: SonarCloud
