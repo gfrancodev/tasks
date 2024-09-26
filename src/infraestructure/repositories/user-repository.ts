@@ -11,7 +11,7 @@ import { GeneralErrors } from '../exceptions/errors/general-error';
 @Injectable()
 export class UserRepository implements IUserRepository {
   private readonly logger = new Logger(UserRepository.name);
-  private prisma: PrismaClient;
+  private readonly prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;

@@ -8,7 +8,7 @@ export class JwtManagerService {
   public publicKey = process.env.PUBLIC_KEY;
   public passphase = process.env.PASSPHASE;
 
-  constructor(private jwtService: JwtService) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   encode(payload: any) {
     return this.jwtService.sign(payload, {
