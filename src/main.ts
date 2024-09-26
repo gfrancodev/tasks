@@ -35,9 +35,9 @@ async function bootstrap() {
   useContainer(app.select(App), { fallbackOnErrors: true });
 
   const configService = app.get(ConfigService);
-  const PORT = configService.get('PORT') ?? 3000;
+  const PORT = configService.get('PORT') || 3000;
 
-  await app.listen(PORT);
+  await app.listen(Number(PORT));
 
   process.on('SIGINT', async (signal) => await gracefulShutdown(signal, app));
   process.on('SIGTERM', async (signal) => await gracefulShutdown(signal, app));
