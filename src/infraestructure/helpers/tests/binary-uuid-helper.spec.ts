@@ -50,6 +50,21 @@ describe('binaryUUIDToString', () => {
       expect(uuidString).toBe(uuid.toLowerCase());
     });
   });
+
+  it('should convert binary Buffer to string UUID correctly', () => {
+    const uuidBuffer = Buffer.from('550e8400e29b41d4a716446655440000', 'hex');
+    const result = binaryUUIDToString(uuidBuffer);
+    expect(result).toBe(validUUID);
+  });
+
+  it('should throw an error when given an invalid Buffer', () => {
+    expect(() => binaryUUIDToString('not a buffer' as any)).toThrowError('Invalid Buffer length');
+  });
+
+  it('should throw an error when given a Buffer of incorrect length', () => {
+    const invalidBuffer = Buffer.from([0x01, 0x02, 0x03]);
+    expect(() => binaryUUIDToString(invalidBuffer)).toThrowError('Invalid Buffer length');
+  });
 });
 
 describe('normalizeUuid', () => {
@@ -80,5 +95,25 @@ describe('normalizeUuid', () => {
     const expectedUuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
     const result = normalizeUuid(uuidBuffer);
     expect(result).toBe(expectedUuid);
+  });
+
+  it('should return the UUID if it is already a string', () => {
+    const result = normalizeUuid(validUUID);
+    expect(result).toBe(validUUID);
+  });
+
+  it('should convert a Buffer UUID to a string', () => {
+    const uuidBuffer = Buffer.from('550e8400e29b41d4a716446655440000', 'hex');
+    const result = normalizeUuid(uuidBuffer);
+    expect(result).toBe(validUUID);
+  });
+
+  it('should throw an error if input is not a string or Buffer', () => {
+    expect(() => normalizeUuid(123 as any)).toThrowError('Invalid UUID format');
+  });
+
+  it('should throw an error if the Buffer is not 16 bytes long', () => {
+    const invalidBuffer = Buffer.from([0x01, 0x02, 0x03]);
+    expect(() => normalizeUuid(invalidBuffer)).toThrowError('Invalid Buffer length');
   });
 });
