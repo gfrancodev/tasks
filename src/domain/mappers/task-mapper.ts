@@ -49,11 +49,11 @@ export class TaskMapper {
       status: task.status,
       dueDate: task.dueDate,
       company: mapAssignedToOrUndefined(task.company, (assignedTo) => ({
-        uuid: assignedTo?.uuid,
+        uuid: normalizeUuid(assignedTo?.uuid),
         name: assignedTo.name,
       })),
       assignedTo: mapAssignedToOrUndefined(task.assignedTo, (assignedTo) => ({
-        uuid: assignedTo.uuid,
+        uuid: normalizeUuid(assignedTo.uuid),
         email: assignedTo.email,
       })),
       createdAt: task.createdAt,

@@ -42,16 +42,19 @@ export class UserMapper {
 
   static toResponse(user: Partial<User.Root> & { company?: Company.Root; tasks?: Task.Root[] }) {
     return {
-      uuid: user.uuid,
+      uuid: normalizeUuid(user.uuid),
       fullName: user.fullName,
       email: user.email,
       role: user.role,
       companyId: user.companyId,
       company: mapAssignedToOrUndefined(user.company, (assignedTo) => ({
-        uuid: assignedTo?.uuid,
+        uuid: normalizeUuid(assignedTo?.uuid),
         name: assignedTo.name,
       })),
-      tasks: mapOrEmpty(user.tasks, (task) => ({ uuid: task.uuid, title: task.title })),
+      tasks: mapOrEmpty(user.tasks, (task) => ({
+        uuid: normalizeUuid(task.uuid),
+        title: task.title,
+      })),
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

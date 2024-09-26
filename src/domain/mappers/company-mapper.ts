@@ -34,8 +34,14 @@ export class CompanyMapper {
     return {
       uuid: company.uuid,
       name: company.name,
-      users: mapOrEmpty(company.users, (user) => ({ uuid: user.uuid, email: user.email })),
-      tasks: mapOrEmpty(company.tasks, (task) => ({ uuid: task.uuid, title: task.title })),
+      users: mapOrEmpty(company.users, (user) => ({
+        uuid: normalizeUuid(user.uuid),
+        email: user.email,
+      })),
+      tasks: mapOrEmpty(company.tasks, (task) => ({
+        uuid: normalizeUuid(task.uuid),
+        title: task.title,
+      })),
       createdAt: company.createdAt,
       updatedAt: company.updatedAt,
     };
