@@ -162,10 +162,7 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
 
   describe('handleHttpException', () => {
     it('should correctly handle HttpException', () => {
-      const httpException = new HttpException(
-        'Invalid request error',
-        HttpStatus.BAD_REQUEST,
-      );
+      const httpException = new HttpException('Invalid request error', HttpStatus.BAD_REQUEST);
 
       filter.catch(httpException, mockArgumentsHost);
 

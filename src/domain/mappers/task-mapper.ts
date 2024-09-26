@@ -1,7 +1,4 @@
-import {
-  normalizeUuid,
-  stringToBinaryUUID,
-} from 'src/infraestructure/helpers/binary-uuid-helper';
+import { normalizeUuid, stringToBinaryUUID } from 'src/infraestructure/helpers/binary-uuid-helper';
 import { TaskEntity } from '../entities';
 import { CompanyMapper } from './company-mapper';
 import { UserMapper } from './user-mapper';
