@@ -4,7 +4,7 @@ import { ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Exception } from '../../builder/exception';
 import { mockDeep, MockProxy } from 'vitest-mock-extended';
 import { Response, Request } from 'express';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { faker } from '@faker-js/faker';
 import { AbstractHttpAdapter, HttpAdapterHost } from '@nestjs/core';
 import { AuthErrors } from '../../errors/auth-error';
@@ -51,6 +51,30 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
 
     Object.defineProperty(filter, 'httpAdapter', {
       get: () => mockHttpAdapter,
+    });
+  });
+
+  describe('httpAdapter getter', () => {
+    it('should throw an error if HttpAdapter is not available', () => {
+      const filterWithoutAdapter = new AllExceptionsFilter({} as HttpAdapterHost);
+      expect(() => (filterWithoutAdapter as any).httpAdapter).toThrow(
+        'HttpAdapter is not available',
+      );
+    });
+
+    it('should return the httpAdapter when it is available', () => {
+      const mockHttpAdapter = mockDeep<AbstractHttpAdapter>();
+      const httpAdapterHost = { httpAdapter: mockHttpAdapter };
+      const filter = new AllExceptionsFilter(httpAdapterHost);
+
+      expect((filter as any).httpAdapter).toBe(mockHttpAdapter);
+    });
+
+    it('should handle undefined httpAdapterHost', () => {
+      const filterWithUndefinedHost = new AllExceptionsFilter(undefined as any);
+      expect(() => (filterWithUndefinedHost as any).httpAdapter).toThrow(
+        'HttpAdapter is not available',
+      );
     });
   });
 
@@ -160,6 +184,49 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
     });
   });
 
+  describe('catch', () => {
+    it('should handle errors when sending response', () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockHttpAdapter.reply.mockImplementation(() => {
+        throw new Error('Error sending response');
+      });
+
+      const customException = new Exception(AuthErrors.AUTHENTICATION_FAILED);
+
+      filter.catch(customException, mockArgumentsHost);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error while sending response:',
+        expect.any(Error),
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(401);
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should handle errors when sending response and fall back to direct response', () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockHttpAdapter.reply.mockImplementation(() => {
+        throw new Error('Error sending response');
+      });
+      mockResponse.status.mockReturnValue(mockResponse);
+      mockResponse.json.mockReturnValue(mockResponse);
+
+      const customException = new Exception(AuthErrors.AUTHENTICATION_FAILED);
+
+      filter.catch(customException, mockArgumentsHost);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error while sending response:',
+        expect.any(Error),
+      );
+      expect(mockResponse.status).toHaveBeenCalledWith(401);
+      expect(mockResponse.json).toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
   describe('handleHttpException', () => {
     it('should correctly handle HttpException', () => {
       const httpException = new HttpException('Invalid request error', HttpStatus.BAD_REQUEST);
@@ -196,6 +263,122 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
           }),
         }),
         401,
+      );
+    });
+
+    it('should handle HttpException with array description', () => {
+      const httpException = new HttpException(
+        {
+          message: ['Error 1', 'Error 2'],
+          error: 'Bad Request',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+
+      filter.catch(httpException, mockArgumentsHost);
+
+      expect(mockHttpAdapter.reply).toHaveBeenCalledWith(
+        mockResponse,
+        expect.objectContaining({
+          error: expect.objectContaining({
+            details: expect.objectContaining({
+              description: 'Error 1, Error 2',
+            }),
+          }),
+        }),
+        400,
+      );
+    });
+
+    it('should flatten array description', () => {
+      const httpException = new HttpException(
+        {
+          message: ['Error 1', 'Error 2', 'Error 3'],
+          error: 'Bad Request',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+
+      filter.catch(httpException, mockArgumentsHost);
+
+      expect(mockHttpAdapter.reply).toHaveBeenCalledWith(
+        mockResponse,
+        expect.objectContaining({
+          error: expect.objectContaining({
+            details: expect.objectContaining({
+              description: 'Error 1, Error 2, Error 3',
+            }),
+          }),
+        }),
+        400,
+      );
+    });
+
+    it('should handle HttpException with non-array message', () => {
+      const httpException = new HttpException('Single error message', HttpStatus.BAD_REQUEST);
+
+      filter.catch(httpException, mockArgumentsHost);
+
+      expect(mockHttpAdapter.reply).toHaveBeenCalledWith(
+        mockResponse,
+        expect.objectContaining({
+          error: expect.objectContaining({
+            details: expect.objectContaining({
+              description: 'Single error message',
+            }),
+          }),
+        }),
+        400,
+      );
+    });
+
+    it('should handle HttpException with non-array description', () => {
+      const httpException = new HttpException(
+        { message: 'Test error message' },
+        HttpStatus.BAD_REQUEST,
+      );
+
+      filter.catch(httpException, mockArgumentsHost);
+
+      expect(mockHttpAdapter.reply).toHaveBeenCalledWith(
+        mockResponse,
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({
+            status: 400,
+            name: 'HttpException',
+            details: expect.objectContaining({
+              code: 400,
+              description: 'Test error message',
+            }),
+          }),
+        }),
+        400,
+      );
+    });
+
+    it('should handle HttpException with object response and no message property', () => {
+      const httpException = new HttpException({ error: 'Test error' }, HttpStatus.BAD_REQUEST);
+
+      filter.catch(httpException, mockArgumentsHost);
+
+      expect(mockHttpAdapter.reply).toHaveBeenCalledWith(
+        mockResponse,
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({
+            status: 400,
+            name: 'HttpException',
+            id: expect.any(String),
+            details: expect.objectContaining({
+              code: 400,
+              description: expect.any(String),
+              path: expect.any(String),
+              timestamp: expect.any(String),
+            }),
+          }),
+        }),
+        400,
       );
     });
   });
@@ -285,6 +468,19 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
       const fiveSecondsAgo = now.getTime() - 5000;
       expect(date.getTime()).toBeGreaterThanOrEqual(fiveSecondsAgo);
       expect(date.getTime()).toBeLessThanOrEqual(now.getTime());
+    });
+  });
+
+  describe('logException', () => {
+    it('should log unknown exceptions', () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const unknownError = new Error('Unknown error');
+
+      filter.catch(unknownError, mockArgumentsHost);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(unknownError);
+
+      consoleErrorSpy.mockRestore();
     });
   });
 });
