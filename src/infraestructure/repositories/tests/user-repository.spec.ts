@@ -73,6 +73,12 @@ describe('UserRepository', () => {
       expect(result.users).toHaveLength(0);
       expect(result.total).toBe(0);
     });
+
+    it('should throw an exception if findByCompanyWithPagination fails', async () => {
+      prismaClientMock.user.findMany.mockRejectedValue(new Error('Database error'));
+
+      await expect(userRepository.findByCompanyWithPagination(1, 1, 10)).rejects.toThrow(Exception);
+    });
   });
 
   describe('create', () => {
@@ -117,6 +123,12 @@ describe('UserRepository', () => {
 
       expect(result).toHaveLength(0);
     });
+
+    it('should throw an exception if findAll fails', async () => {
+      prismaClientMock.user.findMany.mockRejectedValue(new Error('Database error'));
+
+      await expect(userRepository.findAll(1)).rejects.toThrow(Exception);
+    });
   });
 
   describe('findById', () => {
@@ -139,6 +151,12 @@ describe('UserRepository', () => {
       const result = await userRepository.findById(1, 999);
 
       expect(result).toBeNull();
+    });
+
+    it('should throw an exception if findById fails', async () => {
+      prismaClientMock.user.findFirst.mockRejectedValue(new Error('Database error'));
+
+      await expect(userRepository.findById(1, 1)).resolves.toBeNull();
     });
   });
 
@@ -165,6 +183,22 @@ describe('UserRepository', () => {
       const result = await userRepository.findByUUID(1, validUUID);
 
       expect(result).toBeNull();
+    });
+
+    it('should return null if findByUUID fails', async () => {
+      const errorMessage = 'Database error';
+      prismaClientMock.user.findFirst.mockRejectedValue(new Error(errorMessage));
+
+      const result = await userRepository.findByUUID(1, validUUID);
+
+      expect(result).toBeNull();
+      expect(prismaClientMock.user.findFirst).toHaveBeenCalledWith({
+        where: {
+          uuid: stringToBinaryUUID(validUUID),
+          companyId: 1,
+        },
+        include: { company: true },
+      });
     });
   });
 
@@ -227,6 +261,12 @@ describe('UserRepository', () => {
 
       expect(result).toBeNull();
     });
+
+    it('should throw an exception if findByEmail fails', async () => {
+      prismaClientMock.user.findUnique.mockRejectedValue(new Error('Database error'));
+
+      await expect(userRepository.findByEmail('test@example.com')).resolves.toBeNull();
+    });
   });
 
   describe('updateRole', () => {
@@ -274,6 +314,12 @@ describe('UserRepository', () => {
       const result = await userRepository.findByCompanyAndRole(1, RoleEnum.ADMIN);
 
       expect(result).toHaveLength(0);
+    });
+
+    it('should throw an exception if findByCompanyAndRole fails', async () => {
+      prismaClientMock.user.findMany.mockRejectedValue(new Error('Database error'));
+
+      await expect(userRepository.findByCompanyAndRole(1, RoleEnum.USER)).resolves.toHaveLength(0);
     });
   });
 });
