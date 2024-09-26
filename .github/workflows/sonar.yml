@@ -3,8 +3,29 @@ name: SAST - Run Code Scanner
 on:
   push:
   pull_request:
-  
+
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    container:
+      image: node:alpine3.20
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.9.0'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:cov-ci
+
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
