@@ -4,6 +4,7 @@ import { UserEntity } from '../../entities/user-entity';
 import { RoleEnum } from '../../enums/role-enum';
 import { binaryUUIDToString } from 'src/infraestructure/helpers/binary-uuid-helper';
 import crypto from 'crypto';
+import { stringToBinaryUUID } from 'src/infraestructure/helpers/binary-uuid-helper';
 
 describe('UserMapper', () => {
   let validUUID: string;
@@ -82,6 +83,82 @@ describe('UserMapper', () => {
       expect(responseUser.createdAt).toEqual(new Date('2023-01-01'));
       expect(responseUser.updatedAt).toEqual(new Date('2023-01-02'));
       expect(responseUser.password).toBeUndefined();
+    });
+
+    it('should map user to response format with company and tasks', () => {
+      const mockUser = {
+        id: 1,
+        uuid: stringToBinaryUUID('550e8400-e29b-41d4-a716-446655440000'),
+        fullName: 'John Doe',
+        email: 'john@example.com',
+        password: 'hashedPassword',
+        role: RoleEnum.USER,
+        companyId: 1,
+        company: {
+          id: 1,
+          uuid: stringToBinaryUUID('660e8400-e29b-41d4-a716-446655440000'),
+          name: 'Test Company',
+        },
+        tasks: [
+          {
+            id: 1,
+            uuid: stringToBinaryUUID('770e8400-e29b-41d4-a716-446655440000'),
+            title: 'Test Task',
+          },
+        ],
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      const result = UserMapper.toResponse(mockUser);
+
+      expect(result).toEqual({
+        uuid: '550e8400-e29b-41d4-a716-446655440000',
+        fullName: 'John Doe',
+        email: 'john@example.com',
+        role: RoleEnum.USER,
+        companyId: 1,
+        company: {
+          uuid: '660e8400-e29b-41d4-a716-446655440000',
+          name: 'Test Company',
+        },
+        tasks: [
+          {
+            uuid: '770e8400-e29b-41d4-a716-446655440000',
+            title: 'Test Task',
+          },
+        ],
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-02'),
+      });
+    });
+
+    it('should map user to response format without company and tasks', () => {
+      const mockUser = {
+        id: 1,
+        uuid: stringToBinaryUUID('550e8400-e29b-41d4-a716-446655440000'),
+        fullName: 'John Doe',
+        email: 'john@example.com',
+        password: 'hashedPassword',
+        role: RoleEnum.USER,
+        companyId: 1,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      const result = UserMapper.toResponse(mockUser);
+
+      expect(result).toEqual({
+        uuid: '550e8400-e29b-41d4-a716-446655440000',
+        fullName: 'John Doe',
+        email: 'john@example.com',
+        role: RoleEnum.USER,
+        companyId: 1,
+        company: undefined,
+        tasks: [],
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-02'),
+      });
     });
   });
 });
