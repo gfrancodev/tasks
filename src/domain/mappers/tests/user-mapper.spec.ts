@@ -2,9 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { UserMapper } from '../user-mapper';
 import { UserEntity } from '../../entities/user-entity';
 import { RoleEnum } from '../../enums/role-enum';
-import { binaryUUIDToString } from 'src/infraestructure/helpers/binary-uuid-helper';
+import { binaryUUIDToString, stringToBinaryUUID } from 'src/infraestructure/helpers/binary-uuid-helper';
 import crypto from 'crypto';
-import { stringToBinaryUUID } from 'src/infraestructure/helpers/binary-uuid-helper';
 
 describe('UserMapper', () => {
   let validUUID: string;
