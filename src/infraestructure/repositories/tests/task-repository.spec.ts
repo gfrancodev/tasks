@@ -113,6 +113,19 @@ describe('TaskRepository', () => {
 
       expect(result).toBeNull();
     });
+
+    it('should return null if findById fails', async () => {
+      const errorMessage = 'Database error';
+      prismaClientMock.task.findFirst.mockRejectedValue(new Error(errorMessage));
+
+      const result = await taskRepository.findById(1, 1);
+
+      expect(result).toBeNull();
+      expect(prismaClientMock.task.findFirst).toHaveBeenCalledWith({
+        where: { id: 1, companyId: 1 },
+        include: { company: true, assignedTo: true },
+      });
+    });
   });
 
   describe('findByUUID', () => {
@@ -138,6 +151,22 @@ describe('TaskRepository', () => {
       const result = await taskRepository.findByUUID(1, validUUID);
 
       expect(result).toBeNull();
+    });
+
+    it('should return null if findByUUID fails', async () => {
+      const errorMessage = 'Database error';
+      prismaClientMock.task.findFirst.mockRejectedValue(new Error(errorMessage));
+
+      const result = await taskRepository.findByUUID(1, validUUID);
+
+      expect(result).toBeNull();
+      expect(prismaClientMock.task.findFirst).toHaveBeenCalledWith({
+        where: {
+          uuid: stringToBinaryUUID(validUUID),
+          companyId: 1,
+        },
+        include: { company: true, assignedTo: true },
+      });
     });
   });
 
