@@ -64,6 +64,12 @@ describe('CompanyRepository', () => {
 
       expect(result).toHaveLength(0);
     });
+
+    it('should throw an exception if findAll fails', async () => {
+      prismaClientMock.company.findMany.mockRejectedValue(new Error('Database error'));
+
+      await expect(companyRepository.findAll()).rejects.toThrow(Exception);
+    });
   });
 
   describe('create', () => {
@@ -108,6 +114,14 @@ describe('CompanyRepository', () => {
 
       expect(result).toBeNull();
     });
+
+    it('should return null if findById fails', async () => {
+      prismaClientMock.company.findUnique.mockRejectedValue(new Error('Database error'));
+
+      const result = await companyRepository.findById(1);
+
+      expect(result).toBeNull();
+    });
   });
 
   describe('findByUUID', () => {
@@ -133,6 +147,14 @@ describe('CompanyRepository', () => {
 
     it('should return null if company is not found by UUID', async () => {
       prismaClientMock.company.findFirst.mockResolvedValue(null);
+
+      const result = await companyRepository.findByUUID(validUUID);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null if findByUUID fails', async () => {
+      prismaClientMock.company.findFirst.mockRejectedValue(new Error('Database error'));
 
       const result = await companyRepository.findByUUID(validUUID);
 
@@ -175,6 +197,65 @@ describe('CompanyRepository', () => {
       prismaClientMock.company.delete.mockRejectedValue(new Error('Delete error'));
 
       await expect(companyRepository.delete(1)).rejects.toThrow(Exception);
+    });
+  });
+
+  describe('findByName', () => {
+    it('should find a company by name', async () => {
+      const mockCompany = { id: 1, name: 'Test Company', uuid: validUUID } as any;
+      prismaClientMock.company.findUnique.mockResolvedValue(mockCompany);
+
+      const result = await companyRepository.findByName('Test Company');
+
+      expect(result).toEqual(CompanyMapper.toDomain(mockCompany));
+      expect(prismaClientMock.company.findUnique).toHaveBeenCalledWith({
+        where: { name: 'Test Company' },
+        include: { users: true, tasks: true },
+      });
+    });
+
+    it('should return null if company is not found by name', async () => {
+      prismaClientMock.company.findUnique.mockResolvedValue(null);
+
+      const result = await companyRepository.findByName('Non-existent Company');
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null if findByName fails', async () => {
+      prismaClientMock.company.findUnique.mockRejectedValue(new Error('Database error'));
+
+      const result = await companyRepository.findByName('Test Company');
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('findWithPagination', () => {
+    it('should return paginated companies and total count', async () => {
+      const mockCompanies = [
+        { id: 1, name: 'Company 1', uuid: validUUID },
+        { id: 2, name: 'Company 2', uuid: validUUID },
+      ] as any;
+      prismaClientMock.company.findMany.mockResolvedValue(mockCompanies);
+      prismaClientMock.company.count.mockResolvedValue(10);
+
+      const result = await companyRepository.findWithPagination(1, 2);
+
+      expect(result.companies).toHaveLength(2);
+      expect(result.total).toBe(10);
+      expect(prismaClientMock.company.findMany).toHaveBeenCalledWith({
+        skip: 0,
+        take: 2,
+        include: { users: true, tasks: true },
+      });
+      expect(prismaClientMock.company.count).toHaveBeenCalled();
+    });
+
+    it('should throw an exception if findWithPagination fails', async () => {
+      prismaClientMock.company.findMany.mockRejectedValue(new Error('Database error'));
+
+      await expect(companyRepository.findWithPagination(1, 10)).rejects.toThrow(Exception);
     });
   });
 });
