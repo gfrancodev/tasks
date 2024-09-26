@@ -30,7 +30,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       this.httpAdapter.reply(response, errorResponse, status);
     } catch (error) {
       console.error('Error while sending response:', error);
-      response.status(status).json(errorResponse);
+      response.status(status)?.json(errorResponse);
     }
   }
 
