@@ -1,5 +1,4 @@
 import {
-  binaryUUIDToString,
   normalizeUuid,
   stringToBinaryUUID,
 } from 'src/infraestructure/helpers/binary-uuid-helper';
@@ -7,7 +6,7 @@ import { CompanyEntity } from '../entities';
 import { UserMapper } from './user-mapper';
 import { TaskMapper } from './task-mapper';
 import { mapOrEmpty } from 'src/infraestructure/helpers/map-or-empity-helper';
-import { mapOrUndefined } from 'src/infraestructure/helpers/map-or-undefined';
+import { mapOrUndefined } from 'src/infraestructure/helpers/map-or-undefined-helper';
 
 export class CompanyMapper {
   static toDomain(raw: any): CompanyEntity {
