@@ -1,14 +1,13 @@
 import {
-  binaryUUIDToString,
   normalizeUuid,
   stringToBinaryUUID,
 } from 'src/infraestructure/helpers/binary-uuid-helper';
 import { TaskEntity } from '../entities';
 import { CompanyMapper } from './company-mapper';
 import { UserMapper } from './user-mapper';
-import { mapOrNull } from 'src/infraestructure/helpers/map-or-null';
-import { mapOrUndefined } from 'src/infraestructure/helpers/map-or-undefined';
-import { mapAssignedToOrUndefined } from 'src/infraestructure/helpers/map-assign-or-undefined';
+import { mapAssignedToOrUndefined } from 'src/infraestructure/helpers/map-assign-or-undefined-helper';
+import { mapOrNull } from 'src/infraestructure/helpers/map-or-null-helper';
+import { mapOrUndefined } from 'src/infraestructure/helpers/map-or-undefined-helper';
 
 export class TaskMapper {
   static toDomain(raw: any): TaskEntity {
