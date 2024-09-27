@@ -1,4 +1,4 @@
-import { TaskEntity } from 'src/domain/entities';
+import { TaskEntity } from '@/domain/entities';
 import { TaskStatusEnum } from '../../enums/task-status-enum';
 
 export interface ITaskRepository {
@@ -6,6 +6,14 @@ export interface ITaskRepository {
   findAll(companyId: number): Promise<TaskEntity[]>;
   findById(companyId: number, id: number): Promise<TaskEntity | null>;
   findByUUID(companyId: number, uuid: string): Promise<TaskEntity | null>;
+  findWithPagination(
+    companyId: number,
+    page: number,
+    pageSize: number,
+  ): Promise<{
+    total: number;
+    tasks: TaskEntity[];
+  }>;
   update(companyId: number, id: number, task: Partial<TaskEntity>): Promise<TaskEntity>;
   delete(companyId: number, id: number): Promise<void>;
   findByAssignedUser(companyId: number, userId: number): Promise<TaskEntity[]>;
