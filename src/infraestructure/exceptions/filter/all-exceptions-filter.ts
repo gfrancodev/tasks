@@ -1,12 +1,21 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import { Response, Request } from 'express';
 import { Exception } from '../builder/exception';
 import { AbstractHttpAdapter } from '@nestjs/core/adapters';
 import { HttpAdapterHost } from '@nestjs/core';
 import * as crypto from 'crypto';
+import { GeneralErrors } from '../errors/general-error';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+  protected logger = new Logger(AllExceptionsFilter.name);
   constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
   private get httpAdapter(): AbstractHttpAdapter {
@@ -29,9 +38,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
     try {
       this.httpAdapter.reply(response, errorResponse, status);
     } catch (error) {
-      console.error('Error while sending response:', error);
+      this.logger.error('Error while sending response:', error);
       response.status(status)?.json(errorResponse);
     }
+  }
+
+  private isGeneralError(exception: Exception): boolean {
+    const response = exception.getResponse() as any;
+    return Object.values(GeneralErrors).some((error) => error.code === response.code);
   }
 
   private extractErrorMetadata(request: Request) {
@@ -92,16 +106,33 @@ export class AllExceptionsFilter implements ExceptionFilter {
   ) {
     const status = exception.getStatus();
     const response = exception.getResponse() as any;
+    const description = this.getErrorDescription(exception, response);
 
     return this.buildErrorResponse({
       errorId,
       status,
-      name: exception.name,
+      name: this.getStatusName(status),
       timestamp,
       path,
       code: response.code,
-      description: response.message,
+      description,
     });
+  }
+
+  private getErrorDescription(exception: Exception, response: any): string {
+    if (this.isGeneralError(exception)) {
+      return this.getGeneralErrorDescription(response.code);
+    }
+    return response.message;
+  }
+
+  private getGeneralErrorDescription(errorCode: number): string {
+    const generalError = this.findGeneralErrorByCode(errorCode);
+    return generalError ? generalError.message : 'An error occurred';
+  }
+
+  private findGeneralErrorByCode(errorCode: number) {
+    return Object.values(GeneralErrors).find((error) => error.code === errorCode);
   }
 
   private handleHttpException(
@@ -122,7 +153,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     return this.buildErrorResponse({
       errorId,
       status,
-      name: exception.name || 'HttpException',
+      name: this.getStatusName(status),
       timestamp,
       path,
       code,
@@ -141,7 +172,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     return this.buildErrorResponse({
       errorId,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
-      name: 'InternalServerErrorException',
+      name: this.getStatusName(HttpStatus.INTERNAL_SERVER_ERROR),
       timestamp,
       path,
       code: 500,
@@ -182,11 +213,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
   }
 
+  private getStatusName(statusCode: number): string {
+    const statusEntries = Object.entries(HttpStatus);
+    const statusEntry = statusEntries.find(([, code]) => code === statusCode);
+    return statusEntry ? statusEntry[0] : 'Unknown Status';
+  }
+
   private flattenDescription(description: any[]): string {
     return description.join(', ');
   }
 
   private logException(exception: unknown) {
-    console.error(exception);
+    this.logger.error(exception);
   }
 }
