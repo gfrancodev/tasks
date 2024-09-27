@@ -9,7 +9,7 @@ datasource db {
 
 model Company {
   id        Int      @id @default(autoincrement())
-  uuid      Bytes    @unique @default(dbgenerated("UUID_TO_BIN(UUID())")) @db.Binary(16) @map("uuid")
+  uuid      Bytes    @unique @default(dbgenerated("(UUID_TO_BIN(UUID()))")) @map("uuid") @db.Binary(16)
   name      String   @unique @map("name")
   users     User[]   @relation("company_users")
   tasks     Task[]   @relation("company_tasks")
@@ -20,30 +20,30 @@ model Company {
 }
 
 model User {
-  id         Int      @id @default(autoincrement()) @map("id")
-  uuid       Bytes    @unique @default(dbgenerated("UUID_TO_BIN(UUID())")) @db.Binary(16) @map("uuid")
-  email      String   @unique @map("email")
-  fullName      String   @unique @map("full_name")
-  password   String   @map("password")
-  role       Role     @default(USER) @map("role")
-  companyId  Int      @map("company_id")
-  company    Company  @relation("company_users", fields: [companyId], references: [id])
-  tasks      Task[]   @relation("user_tasks")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id        Int      @id @default(autoincrement()) @map("id")
+  uuid      Bytes    @unique @default(dbgenerated("(UUID_TO_BIN(UUID()))")) @map("uuid") @db.Binary(16)
+  email     String   @unique @map("email")
+  fullName  String   @map("full_name")
+  password  String   @map("password")
+  role      Role     @default(USER) @map("role")
+  companyId Int      @map("company_id")
+  company   Company  @relation("company_users", fields: [companyId], references: [id], onDelete: Cascade) // Move para o lado da chave estrangeira
+  tasks     Task[]   @relation("user_tasks")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("users")
 }
 
 model Task {
   id           Int        @id @default(autoincrement()) @map("id")
-  uuid         Bytes      @unique @default(dbgenerated("UUID_TO_BIN(UUID())")) @db.Binary(16) @map("uuid")
+  uuid         Bytes      @unique @default(dbgenerated("(UUID_TO_BIN(UUID()))")) @map("uuid") @db.Binary(16)
   title        String     @map("title")
   description  String?    @map("description")
   status       TaskStatus @default(PENDING) @map("status")
   dueDate      DateTime   @map("due_date")
   companyId    Int        @map("company_id")
-  company      Company    @relation("company_tasks", fields: [companyId], references: [id])
+  company      Company    @relation("company_tasks", fields: [companyId], references: [id], onDelete: Cascade) // Move para o lado da chave estrangeira
   assignedToId Int?       @map("assigned_to_id")
   assignedTo   User?      @relation("user_tasks", fields: [assignedToId], references: [id])
   createdAt    DateTime   @default(now()) @map("created_at")
@@ -53,6 +53,7 @@ model Task {
 }
 
 enum Role {
+  SUPER_ADMIN @map("SUPER_ADMIN")
   ADMIN @map("ADMIN")
   USER  @map("USER")
 }
