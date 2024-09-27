@@ -4,37 +4,144 @@ Tasks - API é uma aplicação backend robusta para gerenciamento de tarefas e u
 
 ## Sumário
 
+- [Instalação](#instalação)
+- [Executar Projeto](#executar-projeto)
+- [Executar com Docker Compose](#executar-com-docker-compose)
+- [Executar Tests](#executar-tests)
 - [Autenticação e Autorização](#autenticação-e-autorização)
 - [Gestão de Empresas (Tenants)](#gestão-de-empresas-tenants)
 - [Gestão de Usuários](#gestão-de-usuários)
 - [Gestão de Tarefas](#gestão-de-tarefas)
-- [Diagrama de Entidades](#diagrama-de-entidades)
+- [Diagrama de Entidade-Relacionamento](#diagrama-de-entidade-relacionamento)
+- [Segurança e Performance](#segurança-e-performance)
+- [Códigos de Erro por Entidade](#códigos-de-erro-por-entidade)
+
+## Instalação
+
+```bash
+$ npm install
+$ npm run seed # Executar seed do banco de dados
+```
+
+#### Variáveis de Ambiente
+
+A aplicação utiliza diversas variáveis de ambiente para configurar parâmetros essenciais. A seguir, estão listadas as variáveis necessárias:
+
+| Variável               | Descrição                                                                 |
+|------------------------|---------------------------------------------------------------------------|
+| `PORT`                 | Porta na qual a aplicação será executada.                                 |
+| `NODE_ENV`             | Ambiente de execução (`development`, `production`, etc.).                 |
+| `MYSQL_PASSWORD`       | Senha do usuário do banco de dados MySQL.                                 |
+| `MYSQL_ROOT_PASSWORD`  | Senha do usuário root do banco de dados MySQL.                            |
+| `MYSQL_DATABASE`       | Nome do banco de dados a ser utilizado.                                   |
+| `MYSQL_USER`           | Nome do usuário do banco de dados MySQL.                                  |
+| `DATABASE_URL`         | URL de conexão com o banco de dados.                                      |
+| `PASSPHASE`            | Frase secreta utilizada para proteger a chave privada RSA.                 |
+| `SECRET_KEY`           | Chave secreta utilizada para criptografia de dados sensíveis.              |
+| `PRIVATE_KEY`          | Chave privada RSA.                                          |
+| `PUBLIC_KEY`           | Chave pública RSA.                                           |
+
+**Exemplo de arquivo `.env`:**
+
+```env
+PORT=3000
+NODE_ENV=development
+MYSQL_PASSWORD=seu_password_mysql
+MYSQL_ROOT_PASSWORD=seu_root_password_mysql
+MYSQL_DATABASE=tasks_db
+MYSQL_USER=usuario_mysql
+DATABASE_URL=mysql://usuario_mysql:seu_password_mysql@localhost:3306/tasks_db
+PASSPHASE=sua_passphrase_secreta
+SECRET_KEY=sua_chave_secreta
+PRIVATE_KEY="-----BEGIN ENCRYPTED PRIVATE KEY-----..."
+PUBLIC_KEY="-----BEGIN ENCRYPTED PRIVATE KEY-----..."
+```
+
+#### Geração de Chaves RSA
+
+Para gerar o par de chaves RSA necessárias para a autenticação JWT, utilize o Makefile incluído no projeto. Siga os passos abaixo:
+
+1. **Configurar os Parâmetros no Makefile**
+
+   As variáveis `KEY_NAME` e `KEY_DIR` no Makefile determinam o nome e o diretório onde as chaves serão armazenadas. Por padrão, estão configuradas da seguinte forma:
+
+   ```makefile
+   KEY_NAME=task-jwt
+   KEY_DIR=keys
+   ```
+
+   Você pode ajustar esses valores conforme necessário antes de gerar as chaves.
+
+2. **Executar a Geração das Chaves**
+
+   Abra o terminal na raiz do projeto e execute o comando:
+
+   ```bash
+   make 
+   # or
+   make generate_keys
+   ```
+
+   Este comando executa a tarefa `generate_keys`, que realiza os seguintes passos:
+
+   - Cria o diretório definido em `KEY_DIR` se ele não existir.
+   - Solicita ao usuário que insira uma passphrase para proteger a chave privada.
+   - Gera uma chave privada RSA de 4096 bits protegida pela passphrase fornecida.
+   - Gera a chave pública correspondente.
+
+## Executar Projeto
+
+```bash
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
+```
+
+## Executar com Docker Compose
+
+Para executar a aplicação utilizando Docker Compose, siga os passos abaixo:
+
+1. **Instale o Docker e o Docker Compose**: Certifique-se de que o Docker e o Docker Compose estão instalados em sua máquina. Você pode baixar o Docker [aqui](https://www.docker.com/get-started).
+
+2. **Configurar variáveis de ambiente**: Crie um arquivo `.env` na raiz do projeto com as variáveis de ambiente necessárias.
+
+3. **Construir e iniciar os containers**:
+
+    ```bash
+    $ docker-compose up --build
+    ```
+
+    Isso irá construir as imagens necessárias e iniciar os containers definidos no `docker-compose.yml`.
+
+4. **Acessar a aplicação**: A API estará disponível em `http://localhost:3000` ou na porta definida no seu `docker-compose.yml`.
+
+## Executar Tests
+
+```bash
+# unit tests
+$ npm run test
+
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
+```
 
 ## Autenticação e Autorização
+
+- **SUPER_ADMIN** - Tem Acesso a tudo!
 
 ### `POST /v1/auth/login`
 
 - **Descrição**: Autentica o usuário e retorna um token JWT.
 - **Acesso**: **Público**
 - **Permissões**: Qualquer usuário pode acessar para realizar login.
-- **Entrada**:
-```json
-  {
-    "email": "usuario@exemplo.com",
-    "password": "senha123"
-  }
-```
-- **Saída**:
-```json
-  {
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "company_id": "550e8400-e29b-41d4-a716-446655440000"
-  }
-```
-- **Erros possíveis**:
-- 401: Credenciais inválidas
-- 404: Usuário não encontrado
-
 
 ### `GET /v1/auth/me`
 
@@ -171,27 +278,68 @@ Tasks - API é uma aplicação backend robusta para gerenciamento de tarefas e u
   - `USER`: **Não tem permissão** ou conforme políticas da empresa.
 
 ## Diagrama de Entidade-Relacionamento
-![Diagrama de Entidade-Relacionamento](https://www.plantuml.com/plantuml/png/fL7HQeD047ptAmuV2_a1dr9KWj0OqUHPbjnYZtftShT72Kd_lNiLggI5GFkIpEoCkpEwzGIEWXuJDAJe8jBSwWdC9HNNH8Wd9JEX34KOGYIUd383SmCQL_Ji40Xb3vG9oOYKHXw7IVuSVoJVrquUtSDJg46DApw1z-_MhItEZfocvT-OPQxGBnl_cEu8_krXEhQEkE8I_TcfYPGrovG1KF2PY2kxBnoj0VjuTxd-QtgkgmR3ESd-frFG8erlQ6xqNEohclzFNTak-X9lTZLbNLJrZb5LzqrxsBLbrp7B3_lcfJoMHNmqdnEBssspiLSHlsacqbVmwRqKrxEamS20B4VhdJQNPMsBHWOzVW80)
 
-**Notas:**
+![Diagrama de Entidade-Relacionamento](http://www.plantuml.com/plantuml/png/fL51QiCm4Bpd5SB7GZxWKqfYGg1nZ9sSpH8jhgWb6Mb52Kd_tbrCQvCM0kt5dj6CTcViLIG8b6o_G4U6BYfRUpk0ksJgkb3goUXS6KS2Kn8IAHZNCNTWSKRF0O5Gjq2vqep8MEJZDEYVnn-BxssdYE7XAhHW-XaV8CPt7-QMu7jEK_DJiemLscdY7zCT8RuzJCVM7cTSOpm7Cv3nRZfb09HYhcHaGuB5ch2LlTFsNzDpNTCvpad-FvsILPbyeR5HSwgAkdtUx7Sbiw_tgIdgoJs57UzKHRdPbLj6kxAjwiEsBfg6sVgmhrwAOx6Hg-inlxhTbaj_LVA7SvMzGipk9HdFaWK77R8irZjjhCxQ2frEjly4)
 
-- **Público vs. Privado**:
-  - Rotas **públicas** podem ser acessadas sem autenticação.
-  - Rotas **privadas** requerem um token JWT válido para acesso.
+## Segurança e Performance
 
-- **Roles e Permissões**:
-  - `ADMIN`: Usuário com permissões administrativas. Pode realizar operações de criação, leitura, atualização e exclusão (CRUD) em todas as entidades.
-  - `USER`: Usuário comum. Permissões limitadas, geralmente restritas à empresa à qual está associado e às suas próprias informações.
+### Segurança
 
-- **Segurança**:
-  - Todas as rotas privadas devem implementar middleware de autenticação para verificar a validade do token JWT.
-  - A autorização deve ser implementada para garantir que os usuários só acessem recursos aos quais têm permissão.
+- **Autenticação e Autorização**:
+  - Todas as rotas privadas implementam middleware de autenticação para verificar a validade do token JWT.
+  - A autorização é implementada para garantir que os usuários só acessem recursos aos quais têm permissão.
+  
+- **Proteção contra Ataques**:
+  - Implementação de mecanismos de prevenção contra ataques comuns, como injeção de SQL, XSS e CSRF.
 
-# Códigos de Erro por Entidade
+- **Gestão de Senhas**:
+  - As senhas dos usuários são armazenadas de forma segura utilizando hashing bcrypt.
+  
+- **Validação de Dados**:
+  - Todos os inputs são validados para evitar dados maliciosos e garantir a integridade das informações.
+
+Claro! Abaixo está a seção de **Segurança** revisada com explicações mais técnicas, incorporando os detalhes da sua implementação de JWT e outros aspectos de segurança, sem mencionar diretamente as ferramentas utilizadas.
+
+```markdown
+## Segurança
+
+### Autenticação e Autorização
+
+A aplicação implementa um sistema robusto de autenticação e autorização utilizando tokens JWT (JSON Web Tokens). O fluxo de autenticação envolve a geração de um token no momento do login, que encapsula as informações do usuário e suas permissões. Esse token é então enviado nas requisições subsequentes para validar a identidade e as permissões do usuário.
+
+**Gerenciamento de JWT:**
+
+- **Geração de Tokens**:
+  - **Chave Secreta e Chaves Pública/Privada**: Utilizo chaves configuradas via variáveis de ambiente para assinar os tokens, garantindo que apenas a aplicação possa gerar e verificar a autenticidade dos tokens.
+
+  - **Algoritmo de Assinatura**: Utilizo o algoritmo `HS256` para assinar os tokens, proporcionando uma camada adicional de segurança.
+  - **Tempo de Expiração**: Tempo de expiração de 1 hora para os tokens, limitando a janela de oportunidade para uso indevido em caso de comprometimento.
+  - **Codificação**: Asseguro que os tokens sejam codificados em `utf-8` para compatibilidade e segurança na transmissão.
+
+- **Verificação de Tokens**:
+  - **Validação da Assinatura**: Verifica a assinatura do token utilizando a chave pública, garantindo que o token não foi adulterado.
+  - **Algoritmos Permitidos**: Restringe a verificação aos algoritmos especificados para evitar ataques de troca de algoritmo.
+  - **Retorno Tipado**: Retorna os dados decodificados do token com tipagem forte, facilitando o uso seguro das informações contidas no token.
+
+
+- **Encerramento Gracioso**:
+  - **Gestão de Conexões**: Implementação de procedimentos para finalizar conexões de maneira ordenada durante a manutenção ou em caso de falhas, evitando estados inconsistentes e potencial exposição a ataques durante o processo de shutdown.
+
+### Performance
+
+- **Otimização de Consultas**:
+  - As consultas ao banco de dados são otimizadas para reduzir a latência e melhorar o tempo de resposta.
+  
+- **Escalabilidade**:
+  - A aplicação está preparada para escalar horizontalmente, suportando aumento de carga através de containers Docker.
+  
+
+
+## Códigos de Erro por Entidade
 
 A seguir estão os códigos de erro organizados por entidade, incluindo seus identificadores, descrições e códigos de status HTTP correspondentes.
 
-## Autenticação e Autorização
+### Autenticação e Autorização
 
 | CÓDIGO | IDENTIFICADOR          | DESCRIÇÃO                                                   | HTTP STATUS       |
 |--------|------------------------|-------------------------------------------------------------|-------------------|
@@ -201,7 +349,7 @@ A seguir estão os códigos de erro organizados por entidade, incluindo seus ide
 | 1030   | SESSION_EXPIRED        | Sessão expirada. Por favor, faça login novamente.           | 401 Unauthorized  |
 | 1003   | ACCESS_DENIED          | Acesso negado. Você não tem permissão para este recurso.    | 403 Forbidden     |
 
-## Gestão de Empresas (Tenants)
+### Gestão de Empresas (Tenants)
 
 | CÓDIGO | IDENTIFICADOR          | DESCRIÇÃO                                                       | HTTP STATUS       |
 |--------|------------------------|-----------------------------------------------------------------|-------------------|
@@ -213,7 +361,7 @@ A seguir estão os códigos de erro organizados por entidade, incluindo seus ide
 | 1005   | VALIDATION_ERROR       | Erro de validação nos dados da empresa.                         | 400 Bad Request   |
 | 1003   | ACCESS_DENIED          | Acesso negado ao gerenciar empresas.                            | 403 Forbidden     |
 
-## Gestão de Usuários
+### Gestão de Usuários
 
 | CÓDIGO | IDENTIFICADOR           | DESCRIÇÃO                                                      | HTTP STATUS       |
 |--------|-------------------------|----------------------------------------------------------------|-------------------|
@@ -229,7 +377,7 @@ A seguir estão os códigos de erro organizados por entidade, incluindo seus ide
 | 1029   | INVALID_CREDENTIALS_FORMAT | Formato de credenciais inválido.                            | 400 Bad Request   |
 | 1018   | PASSWORD_TOO_WEAK       | A senha fornecida é muito fraca.                               | 400 Bad Request   |
 
-## Gestão de Tarefas
+### Gestão de Tarefas
 
 | CÓDIGO | IDENTIFICADOR           | DESCRIÇÃO                                                       | HTTP STATUS       |
 |--------|-------------------------|-----------------------------------------------------------------|-------------------|
@@ -242,7 +390,7 @@ A seguir estão os códigos de erro organizados por entidade, incluindo seus ide
 | 1003   | ACCESS_DENIED           | Acesso negado ao gerenciar tarefas.                             | 403 Forbidden     |
 | 1028   | INSUFFICIENT_PERMISSIONS| Permissões insuficientes para esta operação.                    | 403 Forbidden     |
 
-## Erros Gerais
+### Erros Gerais
 
 | CÓDIGO | IDENTIFICADOR          | DESCRIÇÃO                                                       | HTTP STATUS       |
 |--------|------------------------|-----------------------------------------------------------------|-------------------|
