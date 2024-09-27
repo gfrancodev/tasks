@@ -2,6 +2,8 @@
 
 Tasks - API é uma aplicação backend robusta para gerenciamento de tarefas e usuários em um ambiente empresarial. Esta API oferece funcionalidades para autenticação, gerenciamento de empresas, usuários e tarefas, com controle de acesso baseado em funções.
 
+Documentação: http://localhost:3000/doc
+
 ## Sumário
 
 - [Instalação](#instalação)
