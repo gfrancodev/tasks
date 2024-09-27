@@ -12,7 +12,15 @@ import {
   Patch,
   HttpCode,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { CreateTaskUseCase } from '@/application/usecases/company/task/create-task-usecase';
 import { UpdateTaskUseCase } from '@/application/usecases/company/task/update-task-usecase';
 import { DeleteTaskUseCase } from '@/application/usecases/company/task/delete-task-usecase';
@@ -26,6 +34,7 @@ import { AssociateTaskUserUseCase } from '@/application/usecases/company/task/as
 import { CurrentUser } from '@/infraestructure/decorators/current-user-decorator';
 import { UpdateTaskStatusDto } from '@/application/dtos/update-task-status-dto';
 import { UpdateTaskStatusUseCase } from '@/application/usecases/company/task/update-task-status-usecase';
+import { TaskEntity } from '@/domain/entities';
 
 @ApiBearerAuth()
 @ApiTags('Tarefas')
@@ -41,27 +50,114 @@ export class CompanyTaskController {
     private readonly updateTaskStatusUseCase: UpdateTaskStatusUseCase,
   ) {}
 
+  @HttpCode(201)
   @Post()
   @Roles('ADMIN', 'USER', 'SUPER_ADMIN')
   @ApiOperation({ summary: 'Criar uma nova tarefa' })
-  @ApiResponse({ status: 201, description: 'Tarefa criada com sucesso' })
-  async createTask(@Param('company_id') companyId: string, @Body() createTaskDto: CreateTaskDto) {
+  @ApiParam({
+    name: 'company_id',
+    description: 'ID da empresa',
+    type: String,
+  })
+  @ApiBody({ type: CreateTaskDto, description: 'Dados para criação da tarefa' })
+  @ApiResponse({
+    status: 201,
+    description: 'Tarefa criada com sucesso',
+    type: TaskEntity,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
+  async createTask(
+    @Param('company_id') companyId: string,
+    @Body() createTaskDto: CreateTaskDto,
+  ) {
     return await this.createTaskUseCase.execute(companyId, createTaskDto);
   }
 
+  @HttpCode(200)
   @Get(':id')
   @Roles('ADMIN', 'USER', 'SUPER_ADMIN')
-  @ApiOperation({ summary: 'Obter uma tarefa específica' })
-  @ApiResponse({ status: 200, description: 'Tarefa encontrada' })
-  @ApiResponse({ status: 404, description: 'Tarefa não encontrada' })
-  async getTask(@Param('company_id') companyId: string, @Param('id') id: string) {
+  @ApiOperation({ summary: 'Obter uma tarefa pelo ID' })
+  @ApiParam({
+    name: 'company_id',
+    description: 'ID da empresa',
+    type: String,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da tarefa',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Tarefa encontrada',
+    type: TaskEntity,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Tarefa não encontrada',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
+  async getTask(
+    @Param('company_id') companyId: string,
+    @Param('id') id: string,
+  ) {
     return await this.getTaskUseCase.execute(companyId, id);
   }
 
+  @HttpCode(200)
   @Get()
   @Roles('ADMIN', 'USER', 'SUPER_ADMIN')
   @ApiOperation({ summary: 'Listar tarefas' })
-  @ApiResponse({ status: 200, description: 'Lista de tarefas obtida com sucesso' })
+  @ApiParam({
+    name: 'company_id',
+    description: 'ID da empresa',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Número da página',
+    type: Number,
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'page_size',
+    required: false,
+    description: 'Quantidade de itens por página',
+    type: Number,
+    example: 10,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de tarefas obtida com sucesso',
+    type: [TaskEntity],
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
   async listTasks(
     @Param('company_id') companyId: string,
     @Query('page') page?: number,
@@ -70,13 +166,44 @@ export class CompanyTaskController {
     return await this.listTasksUseCase.execute(companyId, page, pageSize);
   }
 
+  @HttpCode(200)
   @Put(':id')
   @ConditionalAccess(canAccessUserOwnData())
   @ConditionalAccess(canAccessAdminOwnData())
   @Roles('ADMIN', 'USER', 'SUPER_ADMIN')
-  @ApiOperation({ summary: 'Atualizar uma tarefa' })
-  @ApiResponse({ status: 200, description: 'Tarefa atualizada com sucesso' })
-  @ApiResponse({ status: 404, description: 'Tarefa não encontrada' })
+  @ApiOperation({ summary: 'Atualizar uma tarefa existente' })
+  @ApiParam({
+    name: 'company_id',
+    description: 'ID da empresa',
+    type: String,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da tarefa',
+    type: String,
+  })
+  @ApiBody({ type: UpdateTaskDto, description: 'Dados para atualização da tarefa' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tarefa atualizada com sucesso',
+    type: TaskEntity,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Tarefa não encontrada',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
   async updateTask(
     @Param('company_id') companyId: string,
     @Param('id') id: string,
@@ -91,12 +218,43 @@ export class CompanyTaskController {
     });
   }
 
+  @HttpCode(200)
   @Patch(':id/assign')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'SUPER_ADMIN')
   @ConditionalAccess(canAccessAdminOwnData())
   @ApiOperation({ summary: 'Associar uma tarefa a um usuário' })
-  @ApiResponse({ status: 200, description: 'Tarefa associada com sucesso' })
-  @ApiResponse({ status: 404, description: 'Tarefa ou usuário não encontrado' })
+  @ApiParam({
+    name: 'company_id',
+    description: 'ID da empresa',
+    type: String,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da tarefa',
+    type: String,
+  })
+  @ApiBody({ type: AssociateTaskUserDto, description: 'Dados para associação da tarefa' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tarefa associada com sucesso',
+    type: TaskEntity,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Tarefa ou usuário não encontrado',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
   async associateTaskUser(
     @Param('company_id') companyId: string,
     @Param('id') taskId: string,
@@ -111,11 +269,42 @@ export class CompanyTaskController {
     });
   }
 
+  @HttpCode(200)
   @Patch(':id/status')
   @Roles('ADMIN', 'USER', 'SUPER_ADMIN')
   @ApiOperation({ summary: 'Atualizar o status de uma tarefa' })
-  @ApiResponse({ status: 200, description: 'Status da tarefa atualizado com sucesso' })
-  @ApiResponse({ status: 404, description: 'Tarefa não encontrada' })
+  @ApiParam({
+    name: 'company_id',
+    description: 'ID da empresa',
+    type: String,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da tarefa',
+    type: String,
+  })
+  @ApiBody({ type: UpdateTaskStatusDto, description: 'Dados para atualização do status' })
+  @ApiResponse({
+    status: 200,
+    description: 'Status da tarefa atualizado com sucesso',
+    type: TaskEntity,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Tarefa não encontrada',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
   async updateTaskStatus(
     @Param('company_id') companyId: string,
     @Param('id') id: string,
@@ -132,16 +321,39 @@ export class CompanyTaskController {
 
   @HttpCode(204)
   @Delete(':id')
-  @Roles('ADMIN', 'USER', 'SUPER_ADMIN')
+  @Roles('ADMIN', 'SUPER_ADMIN')
   @ApiOperation({ summary: 'Excluir uma tarefa' })
-  @ApiResponse({ status: 204, description: 'Tarefa excluída com sucesso' })
-  @ApiResponse({ status: 404, description: 'Tarefa não encontrada' })
+  @ApiParam({
+    name: 'company_id',
+    description: 'ID da empresa',
+    type: String,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da tarefa',
+    type: String,
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Tarefa excluída com sucesso',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Tarefa não encontrada',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
   async deleteTask(
-    @Param('company_id')
-    companyId: string,
+    @Param('company_id') companyId: string,
     @Param('id') id: string,
     @CurrentUser() currentUser: Auth.CurrentUser,
-  ) {
+  ): Promise<void> {
     await this.deleteTaskUseCase.execute({
       companyId,
       taskId: id,
