@@ -139,7 +139,7 @@ $ npm run test:cov
 
 ## Autenticação e Autorização
 
-- **SUPER_ADMIN** - Tem Acesso a tudo!
+- **Permissões**: *SUPER_ADMIN* - Tem Acesso a tudo!
 
 ### `POST /v1/auth/login`
 
@@ -199,7 +199,7 @@ $ npm run test:cov
 
 ## Gestão de Usuários
 
-### `POST /v1/company/:company_id/users`
+### `POST /v1/company/:company_id/user`
 
 - **Descrição**: Registra um usuário em uma empresa.
 - **Acesso**: **Privado**
@@ -207,7 +207,7 @@ $ npm run test:cov
   - `ADMIN`: Pode registrar usuários em qualquer empresa.
   - `USER`: **Não tem permissão**.
 
-### `GET /v1/company/:company_id/users`
+### `GET /v1/company/:company_id/user`
 
 - **Descrição**: Lista todos os usuários de uma empresa.
 - **Acesso**: **Privado**
@@ -215,7 +215,7 @@ $ npm run test:cov
   - `ADMIN`: Pode listar usuários de qualquer empresa.
   - `USER`: Pode listar usuários apenas da sua própria empresa.
 
-### `GET /v1/company/:company_id/users/:id`
+### `GET /v1/company/:company_id/user/:id`
 
 - **Descrição**: Visualiza detalhes de um usuário específico.
 - **Acesso**: **Privado**
@@ -223,7 +223,7 @@ $ npm run test:cov
   - `ADMIN`: Pode visualizar qualquer usuário.
   - `USER`: Pode visualizar apenas seus próprios dados.
 
-### `PUT /v1/company/:company_id/users/:id`
+### `PUT /v1/company/:company_id/user/:id`
 
 - **Descrição**: Atualiza dados de um usuário.
 - **Acesso**: **Privado**
@@ -231,7 +231,7 @@ $ npm run test:cov
   - `ADMIN`: Pode atualizar qualquer usuário.
   - `USER`: Pode atualizar apenas seus próprios dados.
 
-### `DELETE /v1/company/:company_id/users/:id`
+### `DELETE /v1/company/:company_id/user/:id`
 
 - **Descrição**: Exclui um usuário.
 - **Acesso**: **Privado**
@@ -241,7 +241,7 @@ $ npm run test:cov
 
 ## Gestão de Tarefas
 
-### `POST /v1/company/:company_id/tasks`
+### `POST /v1/company/:company_id/task`
 
 - **Descrição**: Cria uma nova tarefa para uma empresa.
 - **Acesso**: **Privado**
@@ -249,7 +249,7 @@ $ npm run test:cov
   - `ADMIN`: Pode criar tarefas em qualquer empresa.
   - `USER`: Pode criar tarefas apenas na empresa à qual está associado.
 
-### `GET /v1/company/:company_id/tasks`
+### `GET /v1/company/:company_id/task`
 
 - **Descrição**: Lista todas as tarefas de uma empresa.
 - **Acesso**: **Privado**
@@ -257,7 +257,7 @@ $ npm run test:cov
   - `ADMIN`: Pode listar tarefas de qualquer empresa.
   - `USER`: Pode listar tarefas apenas da sua própria empresa.
 
-### `GET /v1/company/:company_id/tasks/:id`
+### `GET /v1/company/:company_id/task/:id`
 
 - **Descrição**: Visualiza detalhes de uma tarefa específica.
 - **Acesso**: **Privado**
@@ -265,7 +265,7 @@ $ npm run test:cov
   - `ADMIN`: Pode visualizar qualquer tarefa.
   - `USER`: Pode visualizar tarefas da sua empresa.
 
-### `PUT /v1/company/:company_id/tasks/:id`
+### `PUT /v1/company/:company_id/task/:id`
 
 - **Descrição**: Atualiza uma tarefa.
 - **Acesso**: **Privado**
@@ -273,7 +273,7 @@ $ npm run test:cov
   - `ADMIN`: Pode atualizar qualquer tarefa.
   - `USER`: Pode atualizar tarefas atribuídas a si ou conforme regras da empresa.
 
-### `DELETE /v1/company/:company_id/tasks/:id`
+### `DELETE /v1/company/:company_id/task/:id`
 
 - **Descrição**: Exclui uma tarefa.
 - **Acesso**: **Privado**
