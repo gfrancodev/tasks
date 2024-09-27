@@ -16,7 +16,7 @@ import { AuthErrors } from '../exceptions/errors/auth-error';
 export class AuthGuard implements CanActivate {
   protected logger = new Logger(AuthGuard.name);
   constructor(
-    private reflector: Reflector,
+    private readonly reflector: Reflector,
     @Inject('JWT') private readonly jwtManagerService: JwtManagerService,
   ) {}
 
@@ -26,11 +26,17 @@ export class AuthGuard implements CanActivate {
     }
 
     const request = this.getRequest(context);
-    const user = this.authenticateAndExtractUser(request);
-    this.checkUserRole(context, user.role);
-    this.checkConditionalAccess(context, request);
+    
+    try {
+      const user = this.authenticateAndExtractUser(request);
+      this.checkUserRole(context, user.role);
+      this.checkConditionalAccess(context, request);
 
-    return true;
+      return true;
+    } catch (error) {
+      this.logger.error('Authentication failed', error);
+      throw error;
+    }
   }
 
   private isPublicRoute(context: ExecutionContext): boolean {
