@@ -13,11 +13,8 @@ export async function createHashedValue<T>(
   return { value: hashedValue, original: value };
 }
 
-export async function compareHashedValue<T>(
-  plainValue: T,
-  hashedValue: HashedValue<T>,
-): Promise<boolean> {
-  return bcrypt.compare(String(plainValue), hashedValue.value);
+export async function compareHashedValue<T>(plainValue: T, hashedValue: string): Promise<boolean> {
+  return bcrypt.compare(String(plainValue), hashedValue);
 }
 
 export function hashedValueToString<T>(hashedValue: HashedValue<T>): string {
