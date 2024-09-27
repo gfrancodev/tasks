@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "seed": "ts-node prisma/scripts/seed.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -16,7 +17,7 @@
     "test": "vitest --reporter=verbose",
     "test:cov": "vitest --coverage",
     "test:cov-ci": "vitest run --coverage.enabled --coverage.reporter=text-summary --coverage.reporter=clover --coverage.reporter=lcov",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "vitest run --config ./test/vitest-e2e-config.mts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -24,9 +25,11 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/swagger": "^7.4.2",
     "@prisma/client": "^5.20.0",
     "bcrypt": "^5.1.1",
     "class-transform": "^0.7.0",
+    "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "compression": "^1.7.4",
     "helmet": "^7.1.0",
@@ -62,6 +65,7 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.3",
+    "vite-tsconfig-paths": "^5.0.1",
     "vitest": "^2.1.1",
     "vitest-mock-extended": "^2.0.2"
   },
