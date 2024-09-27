@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient, Task } from '@prisma/client';
-import { TaskEntity } from 'src/domain/entities';
-import { TaskStatusEnum } from 'src/domain/enums/task-status-enum';
-import { TaskMapper } from 'src/domain/mappers';
+import { TaskEntity } from '@/domain/entities';
+import { TaskStatusEnum } from '@/domain/enums/task-status-enum';
+import { TaskMapper } from '@/domain/mappers';
 import { stringToBinaryUUID } from '../helpers/binary-uuid-helper';
-import { ITaskRepository } from 'src/domain/interfaces/repository/itask-repository';
+import { ITaskRepository } from '@/domain/interfaces/repository/itask-repository';
 import { Exception } from '../exceptions/builder/exception';
 import { GeneralErrors } from '../exceptions/errors/general-error';
 
@@ -72,6 +72,33 @@ export class TaskRepository implements ITaskRepository {
     } catch (error) {
       this.logger.error('Error in findByUUID task', error);
       return null;
+    }
+  }
+
+  async findWithPagination(
+    companyId: number,
+    page: number,
+    pageSize: number,
+  ): Promise<{ tasks: TaskEntity[]; total: number }> {
+    try {
+      const [tasks, total] = await Promise.all([
+        this.prisma.task.findMany({
+          where: {
+            companyId,
+          },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
+        this.prisma.task.count(),
+      ]);
+
+      return {
+        tasks: tasks.map(TaskMapper.toDomain),
+        total,
+      };
+    } catch (error) {
+      this.logger.error('Error in findWithPagination companies', error);
+      throw new Exception(GeneralErrors.DATABASE_ERROR, String(error?.message));
     }
   }
 

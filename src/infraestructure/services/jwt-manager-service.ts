@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { IJwtManagerService } from '@/domain/interfaces/services/ijwtmanager-service';
 
 @Injectable()
-export class JwtManagerService {
+export class JwtManagerService implements IJwtManagerService {
   public secretKey = process.env.SECRET_KEY;
   public privateKey = process.env.PRIVATE_KEY;
   public publicKey = process.env.PUBLIC_KEY;

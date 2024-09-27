@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient, User } from '@prisma/client';
-import { UserEntity } from 'src/domain/entities';
-import { RoleEnum } from 'src/domain/enums/role-enum';
-import { IUserRepository } from 'src/domain/interfaces/repository/iuser-repository';
-import { UserMapper } from 'src/domain/mappers';
+import { UserEntity } from '@/domain/entities';
+import { RoleEnum } from '@/domain/enums/role-enum';
+import { IUserRepository } from '@/domain/interfaces/repository/iuser-repository';
+import { UserMapper } from '@/domain/mappers';
 import { stringToBinaryUUID } from '../helpers/binary-uuid-helper';
 import { Exception } from '../exceptions/builder/exception';
 import { GeneralErrors } from '../exceptions/errors/general-error';
@@ -94,7 +94,7 @@ export class UserRepository implements IUserRepository {
           uuid: stringToBinaryUUID(uuid),
           companyId,
         },
-        include: { company: true },
+        include: { company: true, tasks: true },
       });
       return user ? UserMapper.toDomain(user) : null;
     } catch (error) {
