@@ -1,4 +1,4 @@
-import { UserEntity } from 'src/domain/entities';
+import { UserEntity } from '@/domain/entities';
 import { RoleEnum } from '../../enums/role-enum';
 
 export interface IUserRepository {
