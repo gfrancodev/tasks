@@ -1,24 +1,24 @@
 import 'reflect-metadata';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { UserRepository } from '../user-repository';
 import { PrismaClient } from '@prisma/client';
-import { UserMapper } from 'src/domain/mappers/user-mapper';
-import { RoleEnum } from 'src/domain/enums/role-enum';
-import { stringToBinaryUUID } from 'src/infraestructure/helpers/binary-uuid-helper';
+import { UserMapper } from '@/domain/mappers/user-mapper';
+import { RoleEnum } from '@/domain/enums/role-enum';
+import { stringToBinaryUUID } from '@/infraestructure/helpers/binary-uuid-helper';
 import crypto from 'crypto';
 import { Exception } from '../../exceptions/builder/exception';
 
 type MockPrismaClient = {
-  [K in keyof PrismaClient]: jest.Mock;
+  [K in keyof PrismaClient]: Mock;
 } & {
   user: {
-    findMany: jest.Mock;
-    count: jest.Mock;
-    create: jest.Mock;
-    findFirst: jest.Mock;
-    update: jest.Mock;
-    delete: jest.Mock;
-    findUnique: jest.Mock;
+    findMany: Mock;
+    count: Mock;
+    create: Mock;
+    findFirst: Mock;
+    update: Mock;
+    delete: Mock;
+    findUnique: Mock;
   };
 };
 
@@ -173,7 +173,7 @@ describe('UserRepository', () => {
           uuid: stringToBinaryUUID(validUUID),
           companyId: 1,
         },
-        include: { company: true },
+        include: { company: true, tasks: true },
       });
     });
 
@@ -197,7 +197,7 @@ describe('UserRepository', () => {
           uuid: stringToBinaryUUID(validUUID),
           companyId: 1,
         },
-        include: { company: true },
+        include: { company: true, tasks: true },
       });
     });
   });

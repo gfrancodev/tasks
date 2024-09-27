@@ -1,22 +1,23 @@
 import 'reflect-metadata';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { TaskRepository } from '../task-repository';
 import { PrismaClient } from '@prisma/client';
-import { TaskMapper } from 'src/domain/mappers/task-mapper';
-import { TaskStatusEnum } from 'src/domain/enums/task-status-enum';
-import { stringToBinaryUUID } from 'src/infraestructure/helpers/binary-uuid-helper';
+import { TaskMapper } from '@/domain/mappers/task-mapper';
+import { TaskStatusEnum } from '@/domain/enums/task-status-enum';
+import { stringToBinaryUUID } from '@/infraestructure/helpers/binary-uuid-helper';
 import crypto from 'crypto';
 import { Exception } from '../../exceptions/builder/exception';
 
 type MockPrismaClient = {
-  [K in keyof PrismaClient]: jest.Mock;
+  [K in keyof PrismaClient]: Mock;
 } & {
   task: {
-    findMany: jest.Mock;
-    create: jest.Mock;
-    findFirst: jest.Mock;
-    update: jest.Mock;
-    delete: jest.Mock;
+    findMany: Mock;
+    create: Mock;
+    findFirst: Mock;
+    update: Mock;
+    delete: Mock;
+    count: Mock;
   };
 };
 
@@ -33,6 +34,7 @@ describe('TaskRepository', () => {
         findFirst: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
+        count: vi.fn(),
       },
     } as unknown as MockPrismaClient;
 
@@ -167,6 +169,34 @@ describe('TaskRepository', () => {
         },
         include: { company: true, assignedTo: true },
       });
+    });
+  });
+
+  describe('findWithPagination', () => {
+    it('should return paginated tasks', async () => {
+      const mockTasks = [
+        { id: 1, title: 'Task 1', companyId: 1, uuid: stringToBinaryUUID(validUUID) },
+        { id: 2, title: 'Task 2', companyId: 1, uuid: stringToBinaryUUID(validUUID) },
+      ];
+      prismaClientMock.task.findMany.mockResolvedValue(mockTasks);
+      prismaClientMock.task.count.mockResolvedValue(10);
+
+      const result = await taskRepository.findWithPagination(1, 1, 2);
+
+      expect(result.tasks).toHaveLength(2);
+      expect(result.total).toBe(10);
+      expect(prismaClientMock.task.findMany).toHaveBeenCalledWith({
+        where: { companyId: 1 },
+        skip: 0,
+        take: 2,
+      });
+      expect(prismaClientMock.task.count).toHaveBeenCalled();
+    });
+
+    it('should throw an exception if findWithPagination fails', async () => {
+      prismaClientMock.task.findMany.mockRejectedValue(new Error('Database error'));
+
+      await expect(taskRepository.findWithPagination(1, 1, 10)).rejects.toThrow(Exception);
     });
   });
 

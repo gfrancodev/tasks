@@ -1,23 +1,23 @@
 import 'reflect-metadata';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { CompanyRepository } from '../company-repository';
 import { PrismaClient } from '@prisma/client';
-import { CompanyMapper } from 'src/domain/mappers/company-mapper';
-import { stringToBinaryUUID } from 'src/infraestructure/helpers/binary-uuid-helper';
+import { CompanyMapper } from '@/domain/mappers/company-mapper';
+import { stringToBinaryUUID } from '@/infraestructure/helpers/binary-uuid-helper';
 import crypto from 'crypto';
 import { Exception } from '../../exceptions/builder/exception';
 
 type MockPrismaClient = {
-  [K in keyof PrismaClient]: jest.Mock;
+  [K in keyof PrismaClient]: Mock;
 } & {
   company: {
-    findMany: jest.Mock;
-    count: jest.Mock;
-    create: jest.Mock;
-    findFirst: jest.Mock;
-    update: jest.Mock;
-    delete: jest.Mock;
-    findUnique: jest.Mock;
+    findMany: Mock;
+    count: Mock;
+    create: Mock;
+    findFirst: Mock;
+    update: Mock;
+    delete: Mock;
+    findUnique: Mock;
   };
 };
 
