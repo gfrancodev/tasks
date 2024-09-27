@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { TaskMapper } from '../task-mapper';
 import { TaskEntity } from '../../entities/task-entity';
 import { TaskStatusEnum } from '../../enums/task-status-enum';
-import { binaryUUIDToString } from 'src/infraestructure/helpers/binary-uuid-helper';
+import { binaryUUIDToString } from '@/infraestructure/helpers/binary-uuid-helper';
 import crypto from 'crypto';
 
 describe('TaskMapper', () => {
@@ -73,7 +73,7 @@ describe('TaskMapper', () => {
 
   describe('toResponse', () => {
     it('should correctly map TaskEntity to response format', () => {
-      const taskEntity: Partial<TaskEntity> = {
+      const taskEntity = {
         uuid: validUUID,
         title: 'Test Task',
         description: 'This is a test task',
@@ -83,25 +83,25 @@ describe('TaskMapper', () => {
         assignedTo: { uuid: String(crypto.randomUUID()), email: 'user@example.com' },
         createdAt: new Date('2023-01-01'),
         updatedAt: new Date('2023-01-02'),
-      };
+      } as Partial<TaskEntity>;
 
       const responseTask = TaskMapper.toResponse(taskEntity);
 
-      expect(responseTask.uuid).toBe(validUUID);
+      expect(responseTask.id).toBe(validUUID);
       expect(responseTask.title).toBe('Test Task');
       expect(responseTask.description).toBe('This is a test task');
       expect(responseTask.status).toBe('PENDING');
-      expect(responseTask.dueDate).toEqual(new Date('2023-12-31'));
+      expect(responseTask.due_date).toEqual(new Date('2023-12-31'));
       expect(responseTask.company).toEqual({
-        uuid: taskEntity.company.uuid,
+        id: taskEntity.company.uuid,
         name: 'Test Company',
       });
-      expect(responseTask.assignedTo).toEqual({
-        uuid: taskEntity.assignedTo.uuid,
+      expect(responseTask.assigned_to).toEqual({
+        id: taskEntity.assignedTo.uuid,
         email: 'user@example.com',
       });
-      expect(responseTask.createdAt).toEqual(new Date('2023-01-01'));
-      expect(responseTask.updatedAt).toEqual(new Date('2023-01-02'));
+      expect(responseTask.created_at).toEqual(new Date('2023-01-01'));
+      expect(responseTask.updated_at).toEqual(new Date('2023-01-02'));
     });
 
     it('should handle undefined company and assignedTo', () => {
@@ -117,15 +117,15 @@ describe('TaskMapper', () => {
 
       const responseTask = TaskMapper.toResponse(taskEntity);
 
-      expect(responseTask.uuid).toBe(validUUID);
+      expect(responseTask.id).toBe(validUUID);
       expect(responseTask.title).toBe('Test Task');
       expect(responseTask.description).toBe('This is a test task');
       expect(responseTask.status).toBe('PENDING');
-      expect(responseTask.dueDate).toEqual(new Date('2023-12-31'));
+      expect(responseTask.due_date).toEqual(new Date('2023-12-31'));
       expect(responseTask.company).toBeUndefined();
       expect(responseTask.assignedTo).toBeUndefined();
-      expect(responseTask.createdAt).toEqual(new Date('2023-01-01'));
-      expect(responseTask.updatedAt).toEqual(new Date('2023-01-02'));
+      expect(responseTask.created_at).toEqual(new Date('2023-01-01'));
+      expect(responseTask.updated_at).toEqual(new Date('2023-01-02'));
     });
   });
 });

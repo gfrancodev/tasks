@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CompanyMapper } from '../company-mapper';
 import { CompanyEntity } from '../../entities/company-entity';
-import { binaryUUIDToString } from 'src/infraestructure/helpers/binary-uuid-helper';
+import { binaryUUIDToString } from '@/infraestructure/helpers/binary-uuid-helper';
 import crypto from 'crypto';
 
 describe('CompanyMapper', () => {
@@ -67,12 +67,12 @@ describe('CompanyMapper', () => {
 
       const responseCompany = CompanyMapper.toResponse(companyEntity as any);
 
-      expect(responseCompany.uuid).toBe(validUUID);
+      expect(responseCompany.id).toBe(validUUID);
       expect(responseCompany.name).toBe('Test Company');
-      expect(responseCompany.createdAt).toEqual(new Date('2023-01-01'));
-      expect(responseCompany.updatedAt).toEqual(new Date('2023-01-02'));
-      expect(responseCompany.users).toEqual([{ uuid: 'user-uuid', email: 'user@example.com' }]);
-      expect(responseCompany.tasks).toEqual([{ uuid: 'task-uuid', title: 'Task Title' }]);
+      expect(responseCompany.created_at).toEqual(new Date('2023-01-01'));
+      expect(responseCompany.updated_at).toEqual(new Date('2023-01-02'));
+      expect(responseCompany.users).toEqual([{ id: 'user-uuid', email: 'user@example.com' }]);
+      expect(responseCompany.tasks).toEqual([{ id: 'task-uuid', title: 'Task Title' }]);
     });
   });
 });
