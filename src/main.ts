@@ -6,6 +6,8 @@ import * as compression from 'compression';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { gracefulShutdown } from './infraestructure/helpers/grace-full-shutdown-helper';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { MysqlConnection } from './infraestructure/connections/mysql';
 
 const logger = new Logger(bootstrap.name);
 
@@ -22,6 +24,18 @@ async function bootstrap() {
   });
   app.use(helmet());
   app.use(compression());
+
+  app.get(MysqlConnection, { strict: false });
+  app.enableShutdownHooks();
+
+  const config = new DocumentBuilder()
+  .setTitle('TASK - API')
+  .setDescription('[BACKEND] Sistema de gestão de tarefas multiusuário.')
+  .setVersion('1.0')
+  .addBearerAuth()
+  .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('/doc', app, document);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -49,6 +63,7 @@ async function bootstrap() {
 bootstrap()
   .then(async ({ PORT }) => {
     logger.log(`RUNNING IN PORT ${PORT}`);
+    logger.log(`API DOCUMENTATION http://localhost:${PORT}/doc`);
   })
   .catch((err) => {
     logger.error(err);
