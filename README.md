@@ -300,9 +300,6 @@ $ npm run test:cov
 - **Validação de Dados**:
   - Todos os inputs são validados para evitar dados maliciosos e garantir a integridade das informações.
 
-Claro! Abaixo está a seção de **Segurança** revisada com explicações mais técnicas, incorporando os detalhes da sua implementação de JWT e outros aspectos de segurança, sem mencionar diretamente as ferramentas utilizadas.
-
-```markdown
 ## Segurança
 
 ### Autenticação e Autorização
