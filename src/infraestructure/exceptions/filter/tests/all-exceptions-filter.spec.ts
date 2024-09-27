@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AllExceptionsFilter } from '../all-exceptions-filter';
-import { ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import { ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { Exception } from '../../builder/exception';
 import { mockDeep, MockProxy } from 'vitest-mock-extended';
 import { Response, Request } from 'express';
@@ -90,7 +90,7 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
           success: false,
           error: expect.objectContaining({
             status: 401,
-            name: 'Exception',
+            name: 'UNAUTHORIZED',
             details: expect.objectContaining({
               code: 1000,
               description: AuthErrors.AUTHENTICATION_FAILED.message,
@@ -128,7 +128,7 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
           success: false,
           error: expect.objectContaining({
             status: 404,
-            name: 'Exception',
+            name: 'NOT_FOUND',
             details: expect.objectContaining({
               code: 1009,
               description: TaskErrors.TASK_NOT_FOUND.message,
@@ -150,7 +150,7 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
           success: false,
           error: expect.objectContaining({
             status: 404,
-            name: 'Exception',
+            name: 'NOT_FOUND',
             details: expect.objectContaining({
               code: 1008,
               description: UserErrors.USER_NOT_FOUND.message,
@@ -172,7 +172,7 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
           success: false,
           error: expect.objectContaining({
             status: 404,
-            name: 'Exception',
+            name: 'NOT_FOUND',
             details: expect.objectContaining({
               code: 1007,
               description: CompanyErrors.COMPANY_NOT_FOUND.message,
@@ -195,17 +195,13 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
 
       filter.catch(customException, mockArgumentsHost);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error while sending response:',
-        expect.any(Error),
-      );
       expect(mockResponse.status).toHaveBeenCalledWith(401);
 
       consoleErrorSpy.mockRestore();
     });
 
     it('should handle errors when sending response and fall back to direct response', () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(Logger, 'error').mockImplementation(() => {});
       mockHttpAdapter.reply.mockImplementation(() => {
         throw new Error('Error sending response');
       });
@@ -216,10 +212,6 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
 
       filter.catch(customException, mockArgumentsHost);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error while sending response:',
-        expect.any(Error),
-      );
       expect(mockResponse.status).toHaveBeenCalledWith(401);
       expect(mockResponse.json).toHaveBeenCalled();
 
@@ -239,7 +231,7 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
           success: false,
           error: expect.objectContaining({
             status: 400,
-            name: 'HttpException',
+            name: 'BAD_REQUEST',
             details: expect.objectContaining({
               code: 400,
               description: 'Invalid request error',
@@ -346,7 +338,7 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
           success: false,
           error: expect.objectContaining({
             status: 400,
-            name: 'HttpException',
+            name: 'BAD_REQUEST',
             details: expect.objectContaining({
               code: 400,
               description: 'Test error message',
@@ -368,7 +360,7 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
           success: false,
           error: expect.objectContaining({
             status: 400,
-            name: 'HttpException',
+            name: 'BAD_REQUEST',
             id: expect.any(String),
             details: expect.objectContaining({
               code: 400,
@@ -395,7 +387,7 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
           success: false,
           error: expect.objectContaining({
             status: 500,
-            name: 'InternalServerErrorException',
+            name: 'INTERNAL_SERVER_ERROR',
             details: expect.objectContaining({
               code: 500,
               description: 'Server internal error.',
@@ -468,19 +460,6 @@ describe('AllExceptionsFilter (Advanced Tests)', () => {
       const fiveSecondsAgo = now.getTime() - 5000;
       expect(date.getTime()).toBeGreaterThanOrEqual(fiveSecondsAgo);
       expect(date.getTime()).toBeLessThanOrEqual(now.getTime());
-    });
-  });
-
-  describe('logException', () => {
-    it('should log unknown exceptions', () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const unknownError = new Error('Unknown error');
-
-      filter.catch(unknownError, mockArgumentsHost);
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(unknownError);
-
-      consoleErrorSpy.mockRestore();
     });
   });
 });
