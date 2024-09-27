@@ -1,11 +1,11 @@
-import { normalizeUuid, stringToBinaryUUID } from 'src/infraestructure/helpers/binary-uuid-helper';
+import { normalizeUuid, stringToBinaryUUID } from '@/infraestructure/helpers/binary-uuid-helper';
 import { CompanyMapper } from './company-mapper';
 import { TaskMapper } from './task-mapper';
 import { UserEntity } from '../entities';
-import { mapOrEmpty } from 'src/infraestructure/helpers/map-or-empity-helper';
-import { mapAssignedToOrUndefined } from 'src/infraestructure/helpers/map-assign-or-undefined-helper';
-import { mapOrNull } from 'src/infraestructure/helpers/map-or-null-helper';
-import { mapOrUndefined } from 'src/infraestructure/helpers/map-or-undefined-helper';
+import { mapOrEmpty } from '@/infraestructure/helpers/map-or-empity-helper';
+import { mapAssignedToOrUndefined } from '@/infraestructure/helpers/map-assign-or-undefined-helper';
+import { mapOrNull } from '@/infraestructure/helpers/map-or-null-helper';
+import { mapOrUndefined } from '@/infraestructure/helpers/map-or-undefined-helper';
 
 export class UserMapper {
   static toDomain(raw: any): UserEntity {
@@ -42,21 +42,49 @@ export class UserMapper {
 
   static toResponse(user: Partial<User.Root> & { company?: Company.Root; tasks?: Task.Root[] }) {
     return {
-      uuid: normalizeUuid(user.uuid),
+      id: normalizeUuid(user.uuid),
       fullName: user.fullName,
       email: user.email,
       role: user.role,
-      companyId: user.companyId,
       company: mapAssignedToOrUndefined(user.company, (assignedTo) => ({
-        uuid: normalizeUuid(assignedTo?.uuid),
+        id: normalizeUuid(assignedTo?.uuid),
         name: assignedTo.name,
       })),
       tasks: mapOrEmpty(user.tasks, (task) => ({
-        uuid: normalizeUuid(task.uuid),
+        id: normalizeUuid(task.uuid),
         title: task.title,
       })),
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+    };
+  }
+
+  static toResponseWithoutRelations(
+    user: Partial<User.Root> & { company?: Company.Root; tasks?: Task.Root[] },
+  ) {
+    return {
+      id: normalizeUuid(user.uuid),
+      full_name: user.fullName,
+      email: user.email,
+      role: user.role,
+      created_at: user.createdAt,
+      updated_at: user.updatedAt,
+    };
+  }
+
+  static toResponseWithPagination(result: {
+    total: number;
+    current_page: number;
+    per_page: number;
+    in_page: number;
+    data: Partial<UserEntity>[];
+  }) {
+    return {
+      total: result.total,
+      current_page: result.current_page,
+      per_page: result.per_page,
+      in_page: result.in_page,
+      data: mapOrEmpty(result.data, (user) => UserMapper.toResponseWithoutRelations(user)),
     };
   }
 }

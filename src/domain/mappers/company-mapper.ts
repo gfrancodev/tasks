@@ -1,9 +1,9 @@
-import { normalizeUuid, stringToBinaryUUID } from 'src/infraestructure/helpers/binary-uuid-helper';
+import { normalizeUuid, stringToBinaryUUID } from '@/infraestructure/helpers/binary-uuid-helper';
 import { CompanyEntity } from '../entities';
 import { UserMapper } from './user-mapper';
 import { TaskMapper } from './task-mapper';
-import { mapOrEmpty } from 'src/infraestructure/helpers/map-or-empity-helper';
-import { mapOrUndefined } from 'src/infraestructure/helpers/map-or-undefined-helper';
+import { mapOrEmpty } from '@/infraestructure/helpers/map-or-empity-helper';
+import { mapOrUndefined } from '@/infraestructure/helpers/map-or-undefined-helper';
 
 export class CompanyMapper {
   static toDomain(raw: any): CompanyEntity {
@@ -30,20 +30,45 @@ export class CompanyMapper {
     };
   }
 
-  static toResponse(company: Partial<Company.Root> & { users: User.Root[]; tasks: Task.Root[] }) {
+  static toResponse(company: Partial<CompanyEntity>) {
     return {
-      uuid: company.uuid,
+      id: company.uuid,
       name: company.name,
       users: mapOrEmpty(company.users, (user) => ({
-        uuid: normalizeUuid(user.uuid),
+        id: normalizeUuid(user.uuid),
         email: user.email,
       })),
       tasks: mapOrEmpty(company.tasks, (task) => ({
-        uuid: normalizeUuid(task.uuid),
+        id: normalizeUuid(task.uuid),
         title: task.title,
       })),
-      createdAt: company.createdAt,
-      updatedAt: company.updatedAt,
+      created_at: company.createdAt,
+      updated_at: company.updatedAt,
+    };
+  }
+
+  static toResponseWithoutRelations(company: Partial<CompanyEntity>) {
+    return {
+      id: company.uuid,
+      name: company.name,
+      created_at: company.createdAt,
+      updated_at: company.updatedAt,
+    };
+  }
+
+  static toResponseWithPagination(result: {
+    total: number;
+    current_page: number;
+    per_page: number;
+    in_page: number;
+    data: Partial<CompanyEntity>[];
+  }) {
+    return {
+      total: result.total,
+      current_page: result.current_page,
+      per_page: result.per_page,
+      in_page: result.in_page,
+      data: mapOrEmpty(result.data, (company) => CompanyMapper.toResponseWithoutRelations(company)),
     };
   }
 }
