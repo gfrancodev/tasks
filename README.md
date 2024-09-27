@@ -1,6 +1,6 @@
-# Documentação da API
+# TASKS - API
 
-Este documento descreve as rotas disponíveis na API, detalha quais roles (papéis) têm permissão para acessá-las e indica quais rotas são públicas ou privadas. Esta documentação servirá como base para o desenvolvimento e uso da API.
+Tasks - API é uma aplicação backend robusta para gerenciamento de tarefas e usuários em um ambiente empresarial. Esta API oferece funcionalidades para autenticação, gerenciamento de empresas, usuários e tarefas, com controle de acesso baseado em funções.
 
 ## Sumário
 
@@ -12,13 +12,31 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
 
 ## Autenticação e Autorização
 
-### `POST /auth/login`
+### `POST /v1/auth/login`
 
 - **Descrição**: Autentica o usuário e retorna um token JWT.
 - **Acesso**: **Público**
 - **Permissões**: Qualquer usuário pode acessar para realizar login.
+- **Entrada**:
+```json
+  {
+    "email": "usuario@exemplo.com",
+    "password": "senha123"
+  }
+```
+- **Saída**:
+```json
+  {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "company_id": "550e8400-e29b-41d4-a716-446655440000"
+  }
+```
+- **Erros possíveis**:
+- 401: Credenciais inválidas
+- 404: Usuário não encontrado
 
-### `GET /auth/me`
+
+### `GET /v1/auth/me`
 
 - **Descrição**: Retorna as informações do usuário autenticado.
 - **Acesso**: **Privado**
@@ -28,7 +46,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
 
 ## Gestão de Empresas (Tenants)
 
-### `POST /companies`
+### `POST /v1/company`
 
 - **Descrição**: Cria uma nova empresa.
 - **Acesso**: **Privado**
@@ -36,7 +54,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode criar empresas.
   - `USER`: **Não tem permissão**.
 
-### `GET /companies`
+### `GET /v1/company`
 
 - **Descrição**: Lista todas as empresas.
 - **Acesso**: **Privado**
@@ -44,7 +62,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode listar todas as empresas.
   - `USER`: **Não tem permissão** ou pode ver apenas sua própria empresa, dependendo das regras de negócio.
 
-### `GET /companies/:id`
+### `GET /v1/company/:id`
 
 - **Descrição**: Visualiza detalhes de uma empresa específica.
 - **Acesso**: **Privado**
@@ -52,7 +70,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode visualizar qualquer empresa.
   - `USER`: Pode visualizar apenas a empresa à qual está associado.
 
-### `PUT /companies/:id`
+### `PUT /v1/company/:id`
 
 - **Descrição**: Atualiza dados de uma empresa.
 - **Acesso**: **Privado**
@@ -60,7 +78,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode atualizar qualquer empresa.
   - `USER`: **Não tem permissão**.
 
-### `DELETE /companies/:id`
+### `DELETE /v1/company/:id`
 
 - **Descrição**: Exclui uma empresa.
 - **Acesso**: **Privado**
@@ -70,7 +88,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
 
 ## Gestão de Usuários
 
-### `POST /companies/:companyId/users`
+### `POST /v1/company/:company_id/users`
 
 - **Descrição**: Registra um usuário em uma empresa.
 - **Acesso**: **Privado**
@@ -78,7 +96,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode registrar usuários em qualquer empresa.
   - `USER`: **Não tem permissão**.
 
-### `GET /companies/:companyId/users`
+### `GET /v1/company/:company_id/users`
 
 - **Descrição**: Lista todos os usuários de uma empresa.
 - **Acesso**: **Privado**
@@ -86,7 +104,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode listar usuários de qualquer empresa.
   - `USER`: Pode listar usuários apenas da sua própria empresa.
 
-### `GET /companies/:companyId/users/:id`
+### `GET /v1/company/:company_id/users/:id`
 
 - **Descrição**: Visualiza detalhes de um usuário específico.
 - **Acesso**: **Privado**
@@ -94,7 +112,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode visualizar qualquer usuário.
   - `USER`: Pode visualizar apenas seus próprios dados.
 
-### `PUT /companies/:companyId/users/:id`
+### `PUT /v1/company/:company_id/users/:id`
 
 - **Descrição**: Atualiza dados de um usuário.
 - **Acesso**: **Privado**
@@ -102,7 +120,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode atualizar qualquer usuário.
   - `USER`: Pode atualizar apenas seus próprios dados.
 
-### `DELETE /companies/:companyId/users/:id`
+### `DELETE /v1/company/:company_id/users/:id`
 
 - **Descrição**: Exclui um usuário.
 - **Acesso**: **Privado**
@@ -112,7 +130,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
 
 ## Gestão de Tarefas
 
-### `POST /companies/:companyId/tasks`
+### `POST /v1/company/:company_id/tasks`
 
 - **Descrição**: Cria uma nova tarefa para uma empresa.
 - **Acesso**: **Privado**
@@ -120,7 +138,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode criar tarefas em qualquer empresa.
   - `USER`: Pode criar tarefas apenas na empresa à qual está associado.
 
-### `GET /companies/:companyId/tasks`
+### `GET /v1/company/:company_id/tasks`
 
 - **Descrição**: Lista todas as tarefas de uma empresa.
 - **Acesso**: **Privado**
@@ -128,7 +146,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode listar tarefas de qualquer empresa.
   - `USER`: Pode listar tarefas apenas da sua própria empresa.
 
-### `GET /companies/:companyId/tasks/:id`
+### `GET /v1/company/:company_id/tasks/:id`
 
 - **Descrição**: Visualiza detalhes de uma tarefa específica.
 - **Acesso**: **Privado**
@@ -136,7 +154,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode visualizar qualquer tarefa.
   - `USER`: Pode visualizar tarefas da sua empresa.
 
-### `PUT /companies/:companyId/tasks/:id`
+### `PUT /v1/company/:company_id/tasks/:id`
 
 - **Descrição**: Atualiza uma tarefa.
 - **Acesso**: **Privado**
@@ -144,7 +162,7 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode atualizar qualquer tarefa.
   - `USER`: Pode atualizar tarefas atribuídas a si ou conforme regras da empresa.
 
-### `DELETE /companies/:companyId/tasks/:id`
+### `DELETE /v1/company/:company_id/tasks/:id`
 
 - **Descrição**: Exclui uma tarefa.
 - **Acesso**: **Privado**
@@ -152,58 +170,8 @@ Este documento descreve as rotas disponíveis na API, detalha quais roles (papé
   - `ADMIN`: Pode excluir qualquer tarefa.
   - `USER`: **Não tem permissão** ou conforme políticas da empresa.
 
-## Diagrama de Entidades
-
-```plantuml
-@startuml
-entity "Company" {
-  *id: int
-  *uuid: string
-  name: string
-  created_at: datetime
-  updated_at: datetime
-}
-
-entity "User" {
-  *id: int
-  *uuid: string
-  email: string
-  password: string
-  role: Role
-  company_id: int
-  created_at: datetime
-  updated_at: datetime
-}
-
-entity "Task" {
-  *id: int
-  *uuid: string
-  title: string
-  description: string
-  status: TaskStatus
-  due_date: datetime
-  company_id: int
-  assigned_to_id: int
-  created_at: datetime
-  updated_at: datetime
-}
-
-enum "Role" {
-  ADMIN
-  USER
-}
-
-enum "TaskStatus" {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-}
-
-Company ||--o{ User: "has"
-Company ||--o{ Task: "manages"
-User ||--o{ Task: "assigns"
-@enduml
-```
+## Diagrama de Entidade-Relacionamento
+![Diagrama de Entidade-Relacionamento](https://www.plantuml.com/plantuml/png/fL7HQeD047ptAmuV2_a1dr9KWj0OqUHPbjnYZtftShT72Kd_lNiLggI5GFkIpEoCkpEwzGIEWXuJDAJe8jBSwWdC9HNNH8Wd9JEX34KOGYIUd383SmCQL_Ji40Xb3vG9oOYKHXw7IVuSVoJVrquUtSDJg46DApw1z-_MhItEZfocvT-OPQxGBnl_cEu8_krXEhQEkE8I_TcfYPGrovG1KF2PY2kxBnoj0VjuTxd-QtgkgmR3ESd-frFG8erlQ6xqNEohclzFNTak-X9lTZLbNLJrZb5LzqrxsBLbrp7B3_lcfJoMHNmqdnEBssspiLSHlsacqbVmwRqKrxEamS20B4VhdJQNPMsBHWOzVW80)
 
 **Notas:**
 
