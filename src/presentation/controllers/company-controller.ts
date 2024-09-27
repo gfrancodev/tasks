@@ -1,5 +1,13 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpCode } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { Roles } from '@/infraestructure/decorators/roles-decorator';
 import { CreateCompanyUseCase } from '@/application/usecases/company/create-company-usecase';
 import { GetCompanyUseCase } from '@/application/usecases/company/get-company-usecase';
@@ -23,29 +31,91 @@ export class CompanyController {
     private readonly listCompanyUseCase: ListCompanyUseCase,
   ) {}
 
+  @HttpCode(201)
   @Post()
   @Roles('SUPER_ADMIN')
   @ApiOperation({ summary: 'Criar uma nova empresa' })
-  @ApiResponse({ status: 201, description: 'Empresa criada com sucesso' })
+  @ApiBody({ type: CreateCompanyDto, description: 'Dados para criação da empresa' })
+  @ApiResponse({
+    status: 201,
+    description: 'Empresa criada com sucesso',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
   async createCompany(@Body() createCompanyDto: CreateCompanyDto) {
     return await this.createCompanyUseCase.execute(createCompanyDto);
   }
 
   @Get(':id')
+  @HttpCode(200)
   @Roles('SUPER_ADMIN', 'ADMIN', 'USER')
   @ApiOperation({ summary: 'Obter uma empresa específica' })
-  @ApiResponse({ status: 200, description: 'Empresa encontrada' })
-  @ApiResponse({ status: 404, description: 'Empresa não encontrada' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da empresa',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Empresa encontrada',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Empresa não encontrada',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
   async getCompany(@Param('id') id: string) {
     return await this.getCompanyUseCase.execute(id);
   }
 
+  @HttpCode(200)
   @Put(':id')
   @Roles('SUPER_ADMIN', 'ADMIN')
   @ConditionalAccess(canAccessAdminOwnData())
   @ApiOperation({ summary: 'Atualizar uma empresa' })
-  @ApiResponse({ status: 200, description: 'Empresa atualizada com sucesso' })
-  @ApiResponse({ status: 404, description: 'Empresa não encontrada' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da empresa',
+    type: String,
+  })
+  @ApiBody({ type: UpdateCompanyDto, description: 'Dados para atualização da empresa' })
+  @ApiResponse({
+    status: 200,
+    description: 'Empresa atualizada com sucesso',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Empresa não encontrada',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
   async updateCompany(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto) {
     return await this.updateCompanyUseCase.execute(id, updateCompanyDto);
   }
@@ -55,16 +125,61 @@ export class CompanyController {
   @Roles('SUPER_ADMIN')
   @ConditionalAccess(canAccessAdminOwnData())
   @ApiOperation({ summary: 'Excluir uma empresa' })
-  @ApiResponse({ status: 204, description: 'Empresa excluída com sucesso' })
-  @ApiResponse({ status: 404, description: 'Empresa não encontrada' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da empresa',
+    type: String,
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Empresa excluída com sucesso',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Empresa não encontrada',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
   async deleteCompany(@Param('id') id: string) {
     await this.deleteCompanyUseCase.execute(id);
   }
 
   @Get()
+  @HttpCode(200)
   @Roles('ADMIN', 'USER', 'SUPER_ADMIN')
   @ApiOperation({ summary: 'Listar empresas' })
-  @ApiResponse({ status: 200, description: 'Lista de empresas obtida com sucesso' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Número da página',
+    type: Number,
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'pageSize',
+    required: false,
+    description: 'Quantidade de itens por página',
+    type: Number,
+    example: 10,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de empresas obtida com sucesso',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso proibido',
+  })
   async listCompanies(@Query('page') page?: number, @Query('pageSize') pageSize?: number) {
     return await this.listCompanyUseCase.execute(page, pageSize);
   }
