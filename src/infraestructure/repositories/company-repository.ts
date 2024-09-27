@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient, Company } from '@prisma/client';
-import { CompanyEntity } from 'src/domain/entities';
-import { ICompanyRepository } from 'src/domain/interfaces/repository/icompany-repository';
-import { CompanyMapper } from 'src/domain/mappers';
+import { CompanyEntity } from '@/domain/entities';
+import { ICompanyRepository } from '@/domain/interfaces/repository/icompany-repository';
+import { CompanyMapper } from '@/domain/mappers';
 import { stringToBinaryUUID } from '../helpers/binary-uuid-helper';
 import { Exception } from '../exceptions/builder/exception';
 import { GeneralErrors } from '../exceptions/errors/general-error';
