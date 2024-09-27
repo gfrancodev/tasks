@@ -8,7 +8,6 @@ import { Exception } from '@/infraestructure/exceptions/builder/exception';
 import { CompanyEntity } from '@/domain/entities';
 import { CompanyErrors } from '@/infraestructure/exceptions/errors/company-error';
 import { ICompanyRepository } from '@/domain/interfaces/repository/icompany-repository';
-import { title } from 'process';
 
 @Injectable()
 export class CreateTaskUseCase {
