@@ -44,7 +44,7 @@ export const GeneralErrors = {
   DATABASE_ERROR: {
     code: 1023,
     identifier: 'DATABASE_ERROR',
-    message: 'Database error.',
+    message: 'An error ocurred.',
     httpStatus: 500,
   },
   SERVICE_UNAVAILABLE: {
