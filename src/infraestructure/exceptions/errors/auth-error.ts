@@ -14,7 +14,7 @@ export const AuthErrors = {
   TOKEN_INVALID: {
     code: 1002,
     identifier: 'TOKEN_INVALID',
-    message: 'Invalid JWT token.',
+    message: 'Invalid token.',
     httpStatus: 401,
   },
   ACCESS_DENIED: {
@@ -33,6 +33,12 @@ export const AuthErrors = {
     code: 1030,
     identifier: 'SESSION_EXPIRED',
     message: 'Session expired. Please log in again.',
+    httpStatus: 401,
+  },
+  AUTHENTICATION_REQUIRED: {
+    code: 1031,
+    identifier: 'AUTHENTICATION_REQUIRED',
+    message: 'Authentication is required to access this resource.',
     httpStatus: 401,
   },
 };
