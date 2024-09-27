@@ -139,13 +139,27 @@ describe('AuthGuard', () => {
     });
   });
 
+  describe('getBearerTokenOrFail', () => {
+    it('should throw an exception when there is no authorization header', () => {
+      const request = { headers: {} };
+      expect(() => (authGuard as any).getBearerTokenOrFail(request)).toThrow(Exception);
+    });
+
+    it('should throw an exception for invalid credential format', () => {
+      const request = { headers: { authorization: 'InvalidFormat' } };
+      expect(() => (authGuard as any).getBearerTokenOrFail(request)).toThrow(Exception);
+    });
+
+    it('should correctly extract the token', () => {
+      const request = { headers: { authorization: 'Bearer validToken' } };
+      const result = (authGuard as any).getBearerTokenOrFail(request);
+      expect(result).toBe('validToken');
+    });
+  });
+
   describe('checkConditionalAccess', () => {
-    it('should not throw when condition is true', () => {
-      const mockConfig = {
-        condition: () => true,
-        message: 'Access granted',
-      };
-      reflector.getAllAndOverride = vi.fn().mockReturnValueOnce(mockConfig);
+    it('should do nothing when there is no conditional access configuration', () => {
+      reflector.getAllAndOverride = vi.fn().mockReturnValue(null);
       const mockRequest = createMockExecutionContext().switchToHttp().getRequest();
       expect(() =>
         (authGuard as any).checkConditionalAccess(executionContextMock, mockRequest),
