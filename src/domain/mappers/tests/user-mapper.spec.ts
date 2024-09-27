@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { UserMapper } from '../user-mapper';
 import { UserEntity } from '../../entities/user-entity';
 import { RoleEnum } from '../../enums/role-enum';
-import { binaryUUIDToString, stringToBinaryUUID } from 'src/infraestructure/helpers/binary-uuid-helper';
+import {
+  binaryUUIDToString,
+  stringToBinaryUUID,
+} from '@/infraestructure/helpers/binary-uuid-helper';
 import crypto from 'crypto';
 
 describe('UserMapper', () => {
@@ -76,7 +79,7 @@ describe('UserMapper', () => {
 
       const responseUser = UserMapper.toResponse(userEntity) as any;
 
-      expect(responseUser.uuid).toBe(validUUID);
+      expect(responseUser.id).toBe(validUUID);
       expect(responseUser.email).toBe('test@example.com');
       expect(responseUser.role).toBe('USER');
       expect(responseUser.createdAt).toEqual(new Date('2023-01-01'));
@@ -92,7 +95,6 @@ describe('UserMapper', () => {
         email: 'john@example.com',
         password: 'hashedPassword',
         role: RoleEnum.USER,
-        companyId: 1,
         company: {
           id: 1,
           uuid: stringToBinaryUUID('660e8400-e29b-41d4-a716-446655440000'),
@@ -112,18 +114,17 @@ describe('UserMapper', () => {
       const result = UserMapper.toResponse(mockUser);
 
       expect(result).toEqual({
-        uuid: '550e8400-e29b-41d4-a716-446655440000',
+        id: '550e8400-e29b-41d4-a716-446655440000',
         fullName: 'John Doe',
         email: 'john@example.com',
         role: RoleEnum.USER,
-        companyId: 1,
         company: {
-          uuid: '660e8400-e29b-41d4-a716-446655440000',
+          id: '660e8400-e29b-41d4-a716-446655440000',
           name: 'Test Company',
         },
         tasks: [
           {
-            uuid: '770e8400-e29b-41d4-a716-446655440000',
+            id: '770e8400-e29b-41d4-a716-446655440000',
             title: 'Test Task',
           },
         ],
@@ -140,7 +141,6 @@ describe('UserMapper', () => {
         email: 'john@example.com',
         password: 'hashedPassword',
         role: RoleEnum.USER,
-        companyId: 1,
         createdAt: new Date('2023-01-01'),
         updatedAt: new Date('2023-01-02'),
       };
@@ -148,11 +148,10 @@ describe('UserMapper', () => {
       const result = UserMapper.toResponse(mockUser);
 
       expect(result).toEqual({
-        uuid: '550e8400-e29b-41d4-a716-446655440000',
+        id: '550e8400-e29b-41d4-a716-446655440000',
         fullName: 'John Doe',
         email: 'john@example.com',
         role: RoleEnum.USER,
-        companyId: 1,
         company: undefined,
         tasks: [],
         createdAt: new Date('2023-01-01'),
